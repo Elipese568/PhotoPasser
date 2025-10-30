@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "PhotoPasser (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "PhotoPasser (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

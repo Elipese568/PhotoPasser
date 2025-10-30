@@ -1,0 +1,383 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="PhotoPasser.TaskWorkspace"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:PhotoPasser"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tk="using:CommunityToolkit.WinUI.Controls"
+    xmlns:conv="using:PhotoPasser.Converters"
+    xmlns:helper="using:PhotoPasser.Helper"
+    xmlns:collections="using:System.Collections.Generic"
+    xmlns:sys="clr-namespace=System;assembly=mscorlib"
+    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:behaviors="using:PhotoPasser.Behaviors"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <conv:UriImageSourceConverter x:Key="UriImageSourceConverter"/>
+        <MenuFlyout x:Name="FileRightTapOperationsFlyout">
+            <MenuFlyoutItem Text="Open in File Explorer" Click="OpenInExplorerMenu_Click">
+                <MenuFlyoutItem.Icon>
+                    <FontIcon Glyph="&#xE8DA;" />
+                </MenuFlyoutItem.Icon>
+            </MenuFlyoutItem>
+            <MenuFlyoutItem Text="Open" Click="OpenMenu_Click">
+                <MenuFlyoutItem.Icon>
+                    <FontIcon Glyph="&#xE8E5;" />
+                </MenuFlyoutItem.Icon>
+            </MenuFlyoutItem>
+            <MenuFlyoutSeparator/>
+            <MenuFlyoutItem Text="Copy" Click="CopyMenu_Click">
+                <MenuFlyoutItem.Icon>
+                    <SymbolIcon Symbol="Copy"/>
+                </MenuFlyoutItem.Icon>
+            </MenuFlyoutItem>
+            <MenuFlyoutItem Text="Rename" Click="RenameMenu_Click">
+                <MenuFlyoutItem.Icon>
+                    <SymbolIcon Symbol="Rename"/>
+                </MenuFlyoutItem.Icon>
+            </MenuFlyoutItem>
+            <MenuFlyoutItem Text="Delete" Click="DeleteMenu_Click">
+                <MenuFlyoutItem.Icon>
+                    <SymbolIcon Symbol="Delete"/>
+                </MenuFlyoutItem.Icon>
+            </MenuFlyoutItem>
+            <MenuFlyoutSeparator/>
+            <MenuFlyoutItem Text="Copy as path" Click="CopyAsPathMenu_Click">
+                <MenuFlyoutItem.Icon>
+                    <FontIcon Glyph="&#xE756;" />
+                </MenuFlyoutItem.Icon>
+            </MenuFlyoutItem>
+            <MenuFlyoutItem Text="Copy as bitmap" Click="CopyAsBitmapMenu_Click">
+                <MenuFlyoutItem.Icon>
+                    <FontIcon Glyph="&#xE91B;" />
+                </MenuFlyoutItem.Icon>
+            </MenuFlyoutItem>
+            <MenuFlyoutItem Text="Properties" Click="PropertiesMenu_Click">
+                <MenuFlyoutItem.Icon>
+                    <FontIcon Glyph="&#xE946;" />
+                </MenuFlyoutItem.Icon>
+            </MenuFlyoutItem>
+        </MenuFlyout>
+        <MenuFlyout x:Name="FileRightTapOperationsFlyoutMulti">
+            <MenuFlyoutItem Text="Open" Click="OpenMenu_Click">
+                <MenuFlyoutItem.Icon>
+                    <FontIcon Glyph="&#xE8E5;" />
+                </MenuFlyoutItem.Icon>
+            </MenuFlyoutItem>
+            <MenuFlyoutSeparator/>
+            <MenuFlyoutItem Text="Copy" Click="CopyMenu_Click">
+                <MenuFlyoutItem.Icon>
+                    <SymbolIcon Symbol="Copy"/>
+                </MenuFlyoutItem.Icon>
+            </MenuFlyoutItem>
+            <MenuFlyoutItem Text="Delete" Click="DeleteMenu_Click">
+                <MenuFlyoutItem.Icon>
+                    <SymbolIcon Symbol="Delete"/>
+                </MenuFlyoutItem.Icon>
+            </MenuFlyoutItem>
+            <MenuFlyoutSeparator/>
+            <MenuFlyoutItem Text="Properties" Click="PropertiesMenu_Click">
+                <MenuFlyoutItem.Icon>
+                    <FontIcon Glyph="&#xE946;" />
+                </MenuFlyoutItem.Icon>
+            </MenuFlyoutItem>
+        </MenuFlyout>
+        <local:FileNameConverter x:Key="FileNameConverter" Workspace="{x:Bind}" InResourceView="True"/>
+        <ItemsPanelTemplate x:Name="TrumbullViewPanel">
+            <local:AdaptiveWrapPanel HorizontalSpacing="8" VerticalSpacing="8"/>
+        </ItemsPanelTemplate>
+        <ItemsPanelTemplate x:Name="TilesViewPanel">
+            <ItemsWrapGrid Orientation="Horizontal"/>
+        </ItemsPanelTemplate>
+        <ItemsPanelTemplate x:Name="DetailsViewPanel">
+            <ItemsStackPanel HorizontalAlignment="Left"/>
+        </ItemsPanelTemplate>
+        <conv:FileTypeFriendlyNameConverter x:Key="FileTypeFriendlyNameConverter"/>
+        <conv:FriendlySizeTextFormatConverter x:Key="FriendlySizeTextFormatConverter"/>
+        <conv:FileIconConverter x:Key="FileIconConverter"/>
+        <conv:NullEnableConverter x:Key="NullEnableConverter"/>
+        <conv:BooleanToObjectConverter x:Key="RightTapMenuFlyoutDicider" TrueObject="{StaticResource FileRightTapOperationsFlyoutMulti}" FalseObject="{StaticResource FileRightTapOperationsFlyout}"/>
+        <helper:SelfReference x:Key="WorkspaceSelf" Value="{x:Bind}"/>
+        <conv:ViewItemTemplateConverter x:Key="ViewItemTemplateConverter">
+            <conv:ViewItemTemplateConverter.TrumbullItemTemplate>
+                <DataTemplate x:DataType="local:PhotoInfo">
+                    <Grid Padding="16" IsRightTapEnabled="True" RightTapped="FileItemPresenter_RightTapped" IsDoubleTapEnabled="True" DoubleTapped="ResourceItem_DoubleTapped" 
+                          ContextFlyout="{Binding Value.ViewModel.IsMultiSelection,Source={StaticResource WorkspaceSelf},Converter={StaticResource RightTapMenuFlyoutDicider}}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="40" />
+                        </Grid.RowDefinitions>
+                        <Image Grid.Row="0" Height="80" Width="80" Source="{x:Bind Path, Converter={StaticResource UriImageSourceConverter}}"/>
+                        <TextBlock MaxWidth="150" MaxHeight="40" Grid.Row="1" Style="{ThemeResource BodyTextBlockStyle}" Text="{x:Bind UserName}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    </Grid>
+                </DataTemplate>
+            </conv:ViewItemTemplateConverter.TrumbullItemTemplate>
+            <conv:ViewItemTemplateConverter.TileItemTemplate>
+                <DataTemplate x:DataType="local:PhotoInfo">
+                    <Grid Padding="8" ColumnSpacing="4" Width="250" Height="64" IsRightTapEnabled="True" IsDoubleTapEnabled="True" DoubleTapped="ResourceItem_DoubleTapped" RightTapped="FileItemPresenter_RightTapped"
+                          ContextFlyout="{Binding Value.ViewModel.IsMultiSelection,Source={StaticResource WorkspaceSelf},Converter={StaticResource RightTapMenuFlyoutDicider}}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*" />
+                            <RowDefinition Height="1*" />
+                            <RowDefinition Height="1*" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="48" />
+                            <ColumnDefinition Width="1*" />
+                        </Grid.ColumnDefinitions>
+                        <Image Grid.Row="0" Grid.RowSpan="3" Grid.Column="0" MaxHeight="48" MaxWidth="48" Source="{x:Bind Path, Converter={StaticResource UriImageSourceConverter}}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Style="{ThemeResource BodyStrongTextBlockStyle}" Text="{x:Bind UserName, Mode=OneWay}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind Path, Converter={StaticResource FileTypeFriendlyNameConverter}}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind Size, Converter={StaticResource FriendlySizeTextFormatConverter}}"/>
+                    </Grid>
+                </DataTemplate>
+            </conv:ViewItemTemplateConverter.TileItemTemplate>
+            <conv:ViewItemTemplateConverter.DetailItemTemplate>
+                <DataTemplate x:DataType="local:PhotoInfo">
+                    <Grid Name="ResourceItem" HorizontalAlignment="Left" Padding="24,0" ColumnSpacing="8" IsDoubleTapEnabled="True" DoubleTapped="ResourceItem_DoubleTapped" IsRightTapEnabled="True" RightTapped="FileItemPresenter_RightTapped"
+                          ContextFlyout="{Binding Value.ViewModel.IsMultiSelection,Source={StaticResource WorkspaceSelf},Converter={StaticResource RightTapMenuFlyoutDicider}}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="300" />
+                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="200" />
+                            <ColumnDefinition Width="200" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Image Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" MaxHeight="16" MaxWidth="16" Source="{x:Bind Path, Converter={StaticResource FileIconConverter}}"/>
+                        <TextBlock Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" Style="{ThemeResource BodyStrongTextBlockStyle}" Text="{x:Bind UserName, Mode=OneWay}"/>
+                        <TextBlock Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind Path, Converter={StaticResource FileTypeFriendlyNameConverter}}"/>
+                        <TextBlock Grid.Column="3" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind DateCreated}"/>
+                        <TextBlock Grid.Column="4" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind DateModified}"/>
+                        <TextBlock Grid.Column="5" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind Size, Converter={StaticResource FriendlySizeTextFormatConverter}}"/>
+                    </Grid>
+                </DataTemplate>
+            </conv:ViewItemTemplateConverter.DetailItemTemplate>
+        </conv:ViewItemTemplateConverter>
+
+        <StackPanel x:Name="RemoveTips" Spacing="16">
+            <TextBlock>Once it’s gone, it’s gone. Are you sure you want to delete the file(s)?</TextBlock>
+            <CheckBox x:Name="CheckToRemoveRealFile" Content="Remove physical file"/>
+        </StackPanel>
+    </Page.Resources>
+    <NavigationView x:Name="NavigationViewer" PaneTitle="{x:Bind FiltTask.Name}" ItemInvoked="NavigationViewer_ItemInvoked">
+        <NavigationView.MenuItems>
+            <NavigationViewItem Content="Resources" Icon="Library" Tag="Resources" IsSelected="True"/>
+            <NavigationViewItem Content="Results" Tag="Results">
+                <NavigationViewItem.Icon>
+                    <FontIcon Glyph="&#xF168;" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+            <NavigationViewItem Content="Properties" Tag="Properties">
+                <NavigationViewItem.Icon>
+                    <FontIcon Glyph="&#xE946;" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+        </NavigationView.MenuItems>
+        <NavigationView.FooterMenuItems>
+            <NavigationViewItem Content="Home" Icon="Home" Tag="Home" SelectsOnInvoked="True"/>
+        </NavigationView.FooterMenuItems>
+        <tk:SwitchPresenter Grid.Row="1" Value="{Binding SelectedItem.Tag,ElementName=NavigationViewer}">
+            <tk:Case Value="Resources">
+                <RelativePanel Margin="-36,0,-36,-40" 
+                               HorizontalAlignment="Stretch" 
+                               VerticalAlignment="Stretch" >
+                    <TextBlock x:Name="ResTitle" Margin="72,40,36,36" Text="Resources" Style="{ThemeResource TitleTextBlockStyle}"/>
+                    <Border Background="{ThemeResource LayerOnMicaBaseAltFillColorDefaultBrush}"
+                            Height="{Binding ActualHeight,ElementName=ResourceOperationBar}"
+                            RelativePanel.AlignLeftWithPanel="True"
+                            RelativePanel.AlignRightWithPanel="True"
+                            RelativePanel.Below="ResTitle"
+                            BorderBrush="{ThemeResource DividerStrokeColorDefault}"
+                            BorderThickness="0,1,0,0"/>
+                    <Border Background="{ThemeResource LayerOnMicaBaseAltFillColorDefaultBrush}"
+                            RelativePanel.AlignLeftWithPanel="True"
+                            RelativePanel.AlignRightWithPanel="True"
+                            BorderBrush="{ThemeResource DividerStrokeColorDefault}"
+                            RelativePanel.Below="ResourceOperationBar"
+                            Height="1"
+                            BorderThickness="1"/>
+                    <CommandBar HorizontalAlignment="Left" VerticalAlignment="Top"
+                                DefaultLabelPosition="Right"
+                                RelativePanel.AlignLeftWithPanel="True"
+                                RelativePanel.AlignRightWithPanel="True"
+                                RelativePanel.Below="ResTitle"
+                                x:Name="ResourceOperationBar"
+                                Padding="20,0">
+                        <CommandBar.Resources>
+                            <Style TargetType="AppBarButton" BasedOn="{StaticResource DefaultAppBarButtonStyle}">
+                                <Setter Property="HorizontalAlignment" Value="Left"/>
+                            </Style>
+                        </CommandBar.Resources>
+                        <AppBarButton Icon="Add" Label="Add" Click="AppBarButton_Click"/>
+                        <AppBarSeparator/>
+                        
+                        <AppBarButton Icon="Copy" Label="Copy" IsEnabled="{x:Bind ViewModel.SelectedImage,Converter={StaticResource NullEnableConverter},Mode=OneWay}" Click="CopyMenu_Click"/>
+                        <AppBarButton Icon="Rename" Label="Rename" x:Name="RenameButton" Click="RenameMenu_Click"/>
+                        <AppBarButton Icon="Delete" Label="Delete" IsEnabled="{x:Bind ViewModel.SelectedImage,Converter={StaticResource NullEnableConverter},Mode=OneWay}" Click="DeleteMenu_Click"/>
+
+                        <AppBarSeparator/>
+                        <AppBarButton Label="Copy as Bitmap" x:Name="CopyAsBitmapButton" Click="CopyAsBitmapMenu_Click">
+                            <AppBarButton.Icon>
+                                <FontIcon Glyph="&#xE91B;" />
+                            </AppBarButton.Icon>
+                        </AppBarButton>
+                        <AppBarButton Label="Open in file explorer" x:Name="OpenInExplorerButton" Click="OpenInExplorerMenu_Click">
+                            <AppBarButton.Icon>
+                                <FontIcon Glyph="&#xE8DA;" />
+                            </AppBarButton.Icon>
+                        </AppBarButton>
+                        <AppBarButton Label="Properties" IsEnabled="{x:Bind ViewModel.SelectedImage,Converter={StaticResource NullEnableConverter},Mode=OneWay}" Click="PropertiesMenu_Click">
+                            <AppBarButton.Icon>
+                                <FontIcon Glyph="&#xE946;" />
+                            </AppBarButton.Icon>
+                        </AppBarButton>
+                        <AppBarSeparator/>
+                        <AppBarButton Icon="Sort" Label="Sort">
+                            <AppBarButton.Flyout>
+                                <MenuFlyout>
+                                    <MenuFlyout.SystemBackdrop>
+                                        <DesktopAcrylicBackdrop/>
+                                    </MenuFlyout.SystemBackdrop>
+                                    <interactivity:Interaction.Behaviors>
+                                        <behaviors:RadioMenuItemCheckStateBehavior Value="{x:Bind ViewModel.SortBy,Mode=TwoWay}" ListeningGroupName="SortMethod"/>
+                                        <behaviors:RadioMenuItemCheckStateBehavior Value="{x:Bind ViewModel.SortOrder,Mode=TwoWay}" ListeningGroupName="SortOrder"/>
+                                    </interactivity:Interaction.Behaviors>
+                                    <RadioMenuFlyoutItem Text="Name" GroupName="SortMethod" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Name"/>
+                                    <RadioMenuFlyoutItem Text="Type" GroupName="SortMethod" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Type"/>
+                                    <RadioMenuFlyoutItem Text="Date Created" GroupName="SortMethod" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="DateCreated"/>
+                                    <RadioMenuFlyoutItem Text="Date Modified" GroupName="SortMethod" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="DateModified"/>
+                                    <RadioMenuFlyoutItem Text="Total Size" GroupName="SortMethod" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="TotalSize"/>
+                                    <MenuFlyoutSeparator/>
+                                    <RadioMenuFlyoutItem Text="Ascending" GroupName="SortOrder" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Ascending"/>
+                                    <RadioMenuFlyoutItem Text="Descending" GroupName="SortOrder" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Descending"/>
+                                </MenuFlyout>
+                            </AppBarButton.Flyout>
+                        </AppBarButton>
+                        <AppBarButton Icon="List" Label="View">
+                            <AppBarButton.Flyout>
+                                <MenuFlyout>
+                                    <MenuFlyout.SystemBackdrop>
+                                        <DesktopAcrylicBackdrop/>
+                                    </MenuFlyout.SystemBackdrop>
+                                    <interactivity:Interaction.Behaviors>
+                                        <behaviors:RadioMenuItemCheckStateBehavior Value="{x:Bind ViewModel.CurrentView,Mode=TwoWay}" ListeningGroupName="ViewMode"/>
+                                    </interactivity:Interaction.Behaviors>
+                                    <RadioMenuFlyoutItem Text="Trumbull" GroupName="ViewMode" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Trumbull"/>
+                                    <RadioMenuFlyoutItem Text="Details" GroupName="ViewMode" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Details"/>
+                                    <RadioMenuFlyoutItem Text="Tiles" GroupName="ViewMode" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Tiles"/>
+                                </MenuFlyout>
+                            </AppBarButton.Flyout>
+                        </AppBarButton>
+                        <AppBarSeparator/>
+                        <AppBarButton Label="Select">
+                            <AppBarButton.Icon>
+                                <FontIcon Glyph="&#xE762;" />
+                            </AppBarButton.Icon>
+                            <AppBarButton.Flyout>
+                                <MenuFlyout>
+                                    <MenuFlyout.SystemBackdrop>
+                                        <DesktopAcrylicBackdrop/>
+                                    </MenuFlyout.SystemBackdrop>
+                                    <MenuFlyoutItem Text="Select All" x:Name="SelectAllMenu" Click="SelectAllMenu_Click"/>
+                                    <MenuFlyoutItem Text="Select None" x:Name="SelectNoneMenu" Click="SelectNoneMenu_Click"/>
+                                    <MenuFlyoutItem Text="Invert Selection" x:Name="InvertSelectionMenu" Click="InvertSelectionMenu_Click"/>
+                                </MenuFlyout>
+                            </AppBarButton.Flyout>
+                        </AppBarButton>
+                    </CommandBar>
+                    <Grid RelativePanel.Below="ResourceOperationBar"
+                          RelativePanel.AlignLeftWithPanel="True"
+                          RelativePanel.AlignRightWithPanel="True"
+                          Padding="13,1,86,0"
+                          Height="32"
+                          HorizontalAlignment="Stretch"
+                          Background="{ThemeResource LayerOnMicaBaseAltFillColorDefaultBrush}"
+                          Visibility="{x:Bind ViewModel.FileDetailHeaderVisibility, Mode=OneWay}"
+                          BorderBrush="{ThemeResource DividerStrokeColorDefault}"
+                          BorderThickness="0,1,0,0"
+                          x:Name="DataTableHeader">
+                        <Grid Margin="43,0"
+                              Padding="35,0,16,0"
+                              Visibility="{x:Bind ViewModel.FileDetailHeaderVisibility, Mode=OneWay}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="16" />
+                                <ColumnDefinition Width="300" />
+                                <ColumnDefinition Width="120" />
+                                <ColumnDefinition Width="200" />
+                                <ColumnDefinition Width="200" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Margin="-12,0,0,0" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Left" Text="Name" Foreground="{ThemeResource TextFillColorSecondary}"/>
+                            <TextBlock Grid.Column="2" Margin="5,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" Text="Type" Foreground="{ThemeResource TextFillColorSecondary}"/>
+                            <TextBlock Grid.Column="3" Margin="13,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" Text="Date created" Foreground="{ThemeResource TextFillColorSecondary}"/>
+                            <TextBlock Grid.Column="4" Margin="21,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" Text="Date modified" Foreground="{ThemeResource TextFillColorSecondary}"/>
+                            <TextBlock Grid.Column="5" Margin="30,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" Text="Size" Foreground="{ThemeResource TextFillColorSecondary}"/>
+                        </Grid>
+                    </Grid>
+                    <GridView Background="{ThemeResource LayerOnMicaBaseAltFillColorDefaultBrush}"
+                              Margin="32,1,32,0"
+                              RelativePanel.AlignLeftWithPanel="True"
+                              RelativePanel.AlignRightWithPanel="True"
+                              RelativePanel.AlignBottomWithPanel="True"
+                              RelativePanel.Below="DataTableHeader"
+                              ItemsSource="{x:Bind ViewModel.GetSortedPhotos(ViewModel.Detail.Photos, ViewModel.SortBy, ViewModel.SortOrder),Mode=OneWay}"
+                              SelectedItem="{x:Bind ViewModel.SelectedImage,Mode=TwoWay}"
+                              ItemsPanel="{x:Bind GetPanel(ViewModel.CurrentView),Mode=OneWay}"
+                              ItemTemplate="{x:Bind ViewModel.CurrentView, Converter={StaticResource ViewItemTemplateConverter},Mode=OneWay}"
+                              Padding="24,8,24,44"
+                              AllowDrop="True"
+                              CanDrag="True"
+                              CanDragItems="True"
+                              DragItemsStarting="GridView_DragItemsStarting"
+                              DragOver="GridView_DragOver"
+                              Drop="GridView_Drop"
+                              PointerPressed="GridView_PointerPressed"
+                              SelectionMode="Extended"
+                              KeyTipPlacementMode="Hidden"
+                              KeyboardAcceleratorPlacementMode="Hidden"
+                              x:Name="ResourceItemsView">
+                        <GridView.ItemContainerStyle>
+                            <Style TargetType="GridViewItem" BasedOn="{StaticResource DefaultGridViewItemStyle}">
+                                <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                                <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                            </Style>
+                        </GridView.ItemContainerStyle>
+                        <GridView.KeyboardAccelerators>
+                            <KeyboardAccelerator x:Name="DeleteAccelerator" Modifiers="Control" Key="D" Invoked="DeleteAccelerator_Invoked"/>
+                            <KeyboardAccelerator x:Name="CopyAccelerator" Modifiers="Control" Key="C" Invoked="CopyAccelerator_Invoked"/>
+                            <KeyboardAccelerator x:Name="PasteAccelerator" Modifiers="Control" Key="V" Invoked="PasteAccelerator_Invoked"/>
+                        </GridView.KeyboardAccelerators>
+                        <GridView.ContextFlyout>
+                            <MenuFlyout>
+                                <interactivity:Interaction.Behaviors>
+                                    <behaviors:RadioMenuItemCheckStateBehavior Value="{x:Bind ViewModel.SortBy,Mode=TwoWay}" ListeningGroupName="SortMethod"/>
+                                    <behaviors:RadioMenuItemCheckStateBehavior Value="{x:Bind ViewModel.SortOrder,Mode=TwoWay}" ListeningGroupName="SortOrder"/>
+                                    <behaviors:RadioMenuItemCheckStateBehavior Value="{x:Bind ViewModel.CurrentView,Mode=TwoWay}" ListeningGroupName="ViewMode"/>
+                                </interactivity:Interaction.Behaviors>
+                                <MenuFlyoutItem Icon="Add" Text="Add" Click="AppBarButton_Click"/>
+                                <MenuFlyoutSubItem Icon="Sort" Text="Sort">
+                                    <RadioMenuFlyoutItem Text="Name" GroupName="SortMethod" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Name"/>
+                                    <RadioMenuFlyoutItem Text="Type" GroupName="SortMethod" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Type"/>
+                                    <RadioMenuFlyoutItem Text="Date Created" GroupName="SortMethod" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="DateCreated"/>
+                                    <RadioMenuFlyoutItem Text="Date Modified" GroupName="SortMethod" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="DateModified"/>
+                                    <RadioMenuFlyoutItem Text="Total Size" GroupName="SortMethod" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="TotalSize"/>
+                                    <MenuFlyoutSeparator/>
+                                    <RadioMenuFlyoutItem Text="Ascending" GroupName="SortOrder" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Ascending"/>
+                                    <RadioMenuFlyoutItem Text="Descending" GroupName="SortOrder" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Descending"/>
+                                </MenuFlyoutSubItem>
+                                <MenuFlyoutSubItem Icon="List" Text="View">
+                                    <RadioMenuFlyoutItem Text="Trumbull" GroupName="ViewMode" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Trumbull"/>
+                                    <RadioMenuFlyoutItem Text="Details" GroupName="ViewMode" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Details"/>
+                                    <RadioMenuFlyoutItem Text="Tiles" GroupName="ViewMode" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Tiles"/>
+                                </MenuFlyoutSubItem>
+                            </MenuFlyout>
+                        </GridView.ContextFlyout>
+                    </GridView>
+                </RelativePanel>
+            </tk:Case>
+        </tk:SwitchPresenter>
+    </NavigationView>
+</Page>
