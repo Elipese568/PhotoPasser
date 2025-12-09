@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Page
-    x:Class="PhotoPasser.Dialog.EditTaskDialogPage"
+    x:Class="PhotoPasser.Dialog.EditTaskInformationDialogPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:PhotoPasser.Dialog"
@@ -13,7 +13,7 @@
     </Page.Resources>
     <StackPanel Spacing="16">
         <TextBox Header="Name" Text="{x:Bind ViewModel.TaskName,Mode=TwoWay}"/>
-        <TextBox Header="Description" Text="{x:Bind ViewModel.Description,Mode=TwoWay}"/>
+        <TextBox Header="Description" AcceptsReturn="True" Text="{x:Bind ViewModel.Description,Mode=TwoWay}"/>
         <Grid ColumnSpacing="8">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1*" />

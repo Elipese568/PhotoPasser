@@ -40,14 +40,14 @@ public partial class TaskOverviewViewModel : ObservableRecipient
 
     private void TasksChanged(object? sender, TaskChangedEventArgs e)
     {
-        switch(e.TypeOfChange)
+        switch (e.TypeOfChange)
         {
             case TaskChangedEventArgs.ChangeType.Added:
                 Tasks.Add(e.Task);
                 break;
             case TaskChangedEventArgs.ChangeType.Updated:
                 int idx = Tasks.IndexOf(Tasks.First(x => x.Id == e.Task.Id));
-                if(idx >= 0)
+                if (idx >= 0)
                 {
                     Tasks[idx] = e.Task;
                 }
@@ -65,7 +65,7 @@ public partial class TaskOverviewViewModel : ObservableRecipient
     [RelayCommand]
     public async Task AddTask()
     {
-        var page = new EditTaskDialogPage();
+        var page = new EditTaskInformationDialogPage();
         ContentDialog cd = new ContentDialog()
         {
             Title = "Add New Task",
@@ -77,7 +77,7 @@ public partial class TaskOverviewViewModel : ObservableRecipient
         };
 
         var result = await cd.ShowAsync();
-        if(result == ContentDialogResult.None)
+        if (result == ContentDialogResult.None)
         {
             return;
         }
@@ -89,7 +89,7 @@ public partial class TaskOverviewViewModel : ObservableRecipient
             CopySource = page.ViewModel.CopySource,
             Description = page.ViewModel.Description,
             Id = Guid.NewGuid(),
-            PresentPhoto = "ms-appx:///Assets/LibraryItem/Empty.png"
+            PresentPhoto = App.Current.Resources["EmptyTaskItemPresentPhotoPath"] as string
         };
 
         _taskItemService.AddTask(newTask);
@@ -98,17 +98,17 @@ public partial class TaskOverviewViewModel : ObservableRecipient
     [RelayCommand]
     public async Task EditTask(FiltTask task)
     {
-        var page = new EditTaskDialogPage(task);
+        var page = new EditTaskInformationDialogPage(task);
         ContentDialog cd = new ContentDialog()
         {
-            Title = "Edit Task",
+            Title = "Edit Task Information",
             Content = page,
             PrimaryButtonText = "Save",
             CloseButtonText = "Cancel",
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = App.Current.MainWindow.Content.XamlRoot,
         };
-        var result = await cd.ShowAsync();
+        var result = await cd.ShowAsync(ContentDialogPlacement.InPlace);
         if (result == ContentDialogResult.Secondary)
         {
             return;
@@ -138,7 +138,7 @@ public partial class TaskOverviewViewModel : ObservableRecipient
             XamlRoot = App.Current.MainWindow.Content.XamlRoot,
         };
 
-        if(await cd.ShowAsync() == ContentDialogResult.None)
+        if (await cd.ShowAsync() == ContentDialogResult.None)
         {
             return;
         }
@@ -167,17 +167,17 @@ public sealed partial class TaskOverview : Page
 
     private void LibraryItem_PointerExited(object sender, PointerRoutedEventArgs e)
     {
-        VisualStateManager.GoToState(sender as Control, "OptionSettingButtonDefault",true);
+        VisualStateManager.GoToState(sender as Control, "OptionSettingButtonDefault", true);
     }
 
     private void TaskItemPresenter_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
     {
-        App.Current.MainWindow.Frame.Navigate(typeof(TaskWorkspace), (sender as FrameworkElement).DataContext);
+        App.Current.MainWindow.Frame.Navigate(typeof(TaskWorkspace), (sender as FrameworkElement).DataContext, new Microsoft.UI.Xaml.Media.Animation.DrillInNavigationTransitionInfo());
     }
 
     private void Border_Loaded(object sender, RoutedEventArgs e)
     {
-        
+
     }
 
     private void ShadowRect_Loaded(object sender, RoutedEventArgs e)

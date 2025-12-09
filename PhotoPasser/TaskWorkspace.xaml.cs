@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -11,15 +12,19 @@ using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using PhotoPasser; // 添加此行以引用 TextBoxDialog
+using PhotoPasser.Dialog;
 using PhotoPasser.Helper;
 using PhotoPasser.Service;
 using System;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
+using System.Threading.Tasks;
 using Windows.Foundation.Collections;
+using Windows.Storage;
+using Windows.System;
+using WinRT;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -28,8 +33,6 @@ namespace PhotoPasser;
 
 public class FileNameConverter : IValueConverter
 {
-    public TaskWorkspace Workspace { get; set; }
-    public bool InResourceView { get; set; }
 
     public object Convert(object value, Type targetType, object parameter, string language)
     {
@@ -42,338 +45,184 @@ public class FileNameConverter : IValueConverter
     }
 }
 
-public class AdaptiveWrapPanel : Panel
-{
-    public double HorizontalSpacing
-    {
-        get => (double)GetValue(HorizontalSpacingProperty);
-        set => SetValue(HorizontalSpacingProperty, value);
-    }
-
-    public static readonly DependencyProperty HorizontalSpacingProperty =
-        DependencyProperty.Register(nameof(HorizontalSpacing), typeof(double), typeof(AdaptiveWrapPanel),
-            new PropertyMetadata(8.0, LayoutPropertyChanged));
-
-    public double VerticalSpacing
-    {
-        get => (double)GetValue(VerticalSpacingProperty);
-        set => SetValue(VerticalSpacingProperty, value);
-    }
-
-    public static readonly DependencyProperty VerticalSpacingProperty =
-        DependencyProperty.Register(nameof(VerticalSpacing), typeof(double), typeof(AdaptiveWrapPanel),
-            new PropertyMetadata(8.0, LayoutPropertyChanged));
-
-    private static void LayoutPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-    {
-        if (d is AdaptiveWrapPanel panel)
-        {
-            panel.InvalidateMeasure();
-            panel.InvalidateArrange();
-        }
-    }
-
-    protected override Size MeasureOverride(Size availableSize)
-    {
-        double x = 0;
-        double y = 0;
-        double lineHeight = 0;
-        double totalHeight = 0;
-        double maxWidth = availableSize.Width;
-
-        foreach (var child in Children)
-        {
-            child.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-            var desired = child.DesiredSize;
-
-            // 换行判断
-            if (x + desired.Width > maxWidth && x > 0)
-            {
-                y += lineHeight + VerticalSpacing;
-                totalHeight += lineHeight + VerticalSpacing;
-                x = 0;
-                lineHeight = 0;
-            }
-
-            lineHeight = Math.Max(lineHeight, desired.Height);
-            x += desired.Width + HorizontalSpacing;
-        }
-
-        totalHeight += lineHeight;
-        return new Size(maxWidth, totalHeight);
-    }
-
-    protected override Size ArrangeOverride(Size finalSize)
-    {
-        double maxWidth = finalSize.Width;
-        double x = 0;
-        double y = 0;
-        double lineHeight = 0;
-
-        var currentLine = new List<UIElement>();
-        var lines = new List<(List<UIElement> children, double height)>();
-
-        // --- 先按行分组 ---
-        foreach (var child in Children)
-        {
-            var desired = child.DesiredSize;
-
-            if (x + desired.Width > maxWidth && x > 0)
-            {
-                lines.Add((new List<UIElement>(currentLine), lineHeight));
-                y += lineHeight + VerticalSpacing;
-
-                currentLine.Clear();
-                x = 0;
-                lineHeight = 0;
-            }
-
-            currentLine.Add(child);
-            x += desired.Width + HorizontalSpacing;
-            lineHeight = Math.Max(lineHeight, desired.Height);
-        }
-
-        if (currentLine.Count > 0)
-        {
-            lines.Add((new List<UIElement>(currentLine), lineHeight));
-        }
-
-        // --- 再逐行排列 ---
-        y = 0;
-        foreach (var line in lines)
-        {
-            x = 0;
-            foreach (var child in line.children)
-            {
-                var desired = child.DesiredSize;
-                child.Arrange(new Rect(new Point(x, y), new Size(desired.Width, line.height)));
-                x += desired.Width + HorizontalSpacing;
-            }
-            y += line.height + VerticalSpacing;
-        }
-
-        return finalSize;
-    }
-}
-
 /// <summary>
 /// An empty page that can be used on its own or navigated to within a Frame.
 /// </summary>
 public sealed partial class TaskWorkspace : Page
 {
-    private readonly IServiceProvider _scopedServiceProvider;
-    private readonly ITaskDetailPhysicalManagerService _taskDpmService;
+    private static TaskWorkspaceViewModel _currentVm;
+
     public FiltTask FiltTask { get; set; }
     public TaskDetail Detail { get; set; }
     public TaskWorkspaceViewModel ViewModel { get; set; }
 
-    public bool IsMultiSelection => ResourceItemsView.SelectedItems.Count >1;
-
     public TaskWorkspace()
     {
-        _scopedServiceProvider = App.CreateScope().ServiceProvider;
-        _taskDpmService = _scopedServiceProvider.GetRequiredService<ITaskDetailPhysicalManagerService>();
         InitializeComponent();
     }
 
     protected override async void OnNavigatedTo(NavigationEventArgs e)
     {
-        if (e.Parameter is FiltTask task)
+        
+        if (e.Parameter is FiltTask task && e.NavigationMode == NavigationMode.New)
         {
+
+            var _scopedServiceProvider = App.CreateScope().ServiceProvider;
+            var _taskDpmService = _scopedServiceProvider.GetRequiredService<ITaskDetailPhysicalManagerService>();
             FiltTask = task;
             Detail = await _taskDpmService.InitializeAsync(task);
             // 默认选第一个 result
             ViewModel = new TaskWorkspaceViewModel(task, _taskDpmService, Detail, Detail.Results?.FirstOrDefault() ?? null);
+            await ViewModel.Initialize();
             this.DataContext = ViewModel;
             Bindings.Update();
+            _currentVm = ViewModel;
+            WeakReferenceMessenger.Default.Register(ViewModel, "NoResultAvaliable", (TaskWorkspaceViewModel r, string m) =>
+            {
+                ResultViewFrame.Content = null;
+            });
+            WeakReferenceMessenger.Default.Register(ViewModel, "NavigateToNewResult", async (TaskWorkspaceViewModel r, FiltResult m) =>
+            {
+                await ResultViewFrame.DispatcherQueue.EnqueueAsync(() =>
+                {
+                    ResultViewFrame.Navigate(typeof(ResultView), new ResultViewNavigationParameter()
+                    {
+                        TaskDpmService = ViewModel.TaskDpmService,
+                        NavigatingResult = m
+                    });
+                });
+            });
+            App.Current.ExitProcess += OnExit;
         }
-        ResourceItemsView.SelectionChanged += ResourceItemsView_SelectionChanged;
+        else
+        {
+            ViewModel = _currentVm;
+            FiltTask = ViewModel.FiltTask;
+            Detail = ViewModel.Detail;
+            this.DataContext = ViewModel;
+            Bindings.Update();
+            ResultViewFrame.Navigate(typeof(ResultView), new ResultViewNavigationParameter()
+            {
+                TaskDpmService = ViewModel.TaskDpmService,
+                NavigatingResult = ViewModel.CurrentResult
+            }, new Microsoft.UI.Xaml.Media.Animation.EntranceNavigationTransitionInfo());
+        }
+
         base.OnNavigatedTo(e);
     }
 
-    private void ResourceItemsView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void OnExit(object? sender, EventArgs e)
     {
-        ViewModel.IsMultiSelection = IsMultiSelection;
-        UpdateResourceOperationBarButtons();
-    }
-
-    private void UpdateResourceOperationBarButtons()
-    {
-        //这里假设你有 x:Name="RenameButton" 等控件名
-        RenameButton.IsEnabled = !IsMultiSelection && ViewModel.SelectedImage != null;
-        CopyAsBitmapButton.IsEnabled = !IsMultiSelection && ViewModel.SelectedImage != null;
-        OpenInExplorerButton.IsEnabled = !IsMultiSelection && ViewModel.SelectedImage != null;
-    }
-
-    private void FileItemPresenter_RightTapped(object sender, RightTappedRoutedEventArgs e)
-    {
-        if (IsMultiSelection)
-            FileRightTapOperationsFlyoutMulti.ShowAt((FrameworkElement)sender, new FlyoutShowOptions { Position = e.GetPosition((FrameworkElement)sender) });
-        else
-        {
-            FileRightTapOperationsFlyout.ShowAt((FrameworkElement)sender, new FlyoutShowOptions { Position = e.GetPosition((FrameworkElement)sender) });
-            ViewModel.RightTappedPhoto = (sender as Grid)!.DataContext as PhotoInfo;
-        }
-    }
-
-    private PhotoInfo DecidePath(object sender, PhotoInfo rightTappedValue, PhotoInfo selectedValue)
-    {
-        return sender is MenuFlyoutItem? rightTappedValue : selectedValue;
-    }
-
-    // 菜单项事件绑定
-    private async void RenameMenu_Click(object sender, RoutedEventArgs e)
-    {
-        var file = DecidePath(sender, ViewModel.RightTappedPhoto, ViewModel.SelectedImage);
-        var dialog = new TextBoxDialog("Rename File", "Enter new name:", file.UserName, false)
-        {
-            XamlRoot = App.Current.MainWindow.Content.XamlRoot
-        };
-        if (await dialog.ShowAsync() == ContentDialogResult.Primary)
-        {
-            var newName = dialog.Text;
-            await ViewModel.RenameCommand.ExecuteAsync((file, newName, true));
-        }
-    }
-    private async void OpenMenu_Click(object sender, RoutedEventArgs e)
-    {
-        await ViewModel.OpenCommand.ExecuteAsync(DecidePath(sender, ViewModel.RightTappedPhoto, ViewModel.SelectedImage));
-    }
-    private async void OpenInExplorerMenu_Click(object sender, RoutedEventArgs e)
-    {
-        await ViewModel.OpenInExplorerCommand.ExecuteAsync(DecidePath(sender, ViewModel.RightTappedPhoto, ViewModel.SelectedImage));
-    }
-    private void CopyMenu_Click(object sender, RoutedEventArgs e)
-    {
-        ViewModel.CopyCommand.Execute(ViewModel.IsMultiSelection? ResourceItemsView.SelectedItems.Cast<PhotoInfo>().ToList() : DecidePath(sender, ViewModel.RightTappedPhoto, ViewModel.SelectedImage));
-    }
-    private void CopyAsPathMenu_Click(object sender, RoutedEventArgs e)
-    {
-        ViewModel.CopyAsPathCommand.Execute(DecidePath(sender, ViewModel.RightTappedPhoto, ViewModel.SelectedImage));
-    }
-    private void CopyAsBitmapMenu_Click(object sender, RoutedEventArgs e)
-    {
-        ViewModel.CopyAsBitmapCommand.Execute(DecidePath(sender, ViewModel.RightTappedPhoto, ViewModel.SelectedImage));
-    }
-    private async void DeleteMenu_Click(object sender, RoutedEventArgs e)
-    {
-        await ViewModel.DeleteCommand.ExecuteAsync(ViewModel.IsMultiSelection ? ResourceItemsView.SelectedItems.Cast<PhotoInfo>().ToList() : DecidePath(sender, ViewModel.RightTappedPhoto, ViewModel.SelectedImage));
-    }
-    private async void PropertiesMenu_Click(object sender, RoutedEventArgs e)
-    {
-        if (IsMultiSelection)
-        {
-            var selected = ResourceItemsView.SelectedItems.Cast<PhotoInfo>().ToList();
-            await ViewModel.ShowPropertiesCommand.ExecuteAsync(selected);
-        }
-        else
-        {
-            await ViewModel.ShowPropertiesCommand.ExecuteAsync(DecidePath(sender, ViewModel.RightTappedPhoto, ViewModel.SelectedImage));
-        }
-    }
-
-    private async void GridView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
-    {
-        var files = e.Items.OfType<PhotoInfo>()
-               .Select(async x => await StorageItemProvider.GetStorageFile(x.Path))
-               .EvalResults()
-               .ToListAsync();
-
-        e.Data.SetStorageItems(await files);
-        e.Data.RequestedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Copy;
-
-    }
-
-    private void GridView_DragOver(object sender, DragEventArgs e)
-    {
-        if (e.OriginalSource != ResourceItemsView)
-            e.AcceptedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Copy;
-        else
-            e.AcceptedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.None;
-    }
-
-    private async void GridView_Drop(object sender, DragEventArgs e)
-    {
-        var items = await e.DataView.GetStorageItemsAsync();
-        foreach (var item in items)
-            await ViewModel.AddPhoto(item.Path);
-    }
-
-    public ItemsPanelTemplate GetPanel(DisplayView view)
-    {
-        return view switch
-        {
-            DisplayView.Trumbull => TrumbullViewPanel,
-            DisplayView.Details => DetailsViewPanel,
-            DisplayView.Tiles => TilesViewPanel
-        };
-    }
-
-    private void GridView_PointerPressed(object sender, PointerRoutedEventArgs e)
-    {
-        if(!e.GetCurrentPoint(sender as UIElement).Properties.IsRightButtonPressed)
-            (sender as GridView).SelectedIndex = -1;
-    }
-
-    private void SelectAllMenu_Click(object sender, RoutedEventArgs e)
-    {
-        ResourceItemsView.SelectAllSafe();
-    }
-
-    private void SelectNoneMenu_Click(object sender, RoutedEventArgs e)
-    {
-        ResourceItemsView.SelectedItems.Clear();
-    }
-
-    private void InvertSelectionMenu_Click(object sender, RoutedEventArgs e)
-    {
-        var selectedItems = ResourceItemsView.SelectedItems.Cast<PhotoInfo>().ToList();
-        foreach(var items in ViewModel.Detail.Photos)
-        {
-            if(selectedItems.Contains(items))
-            {
-                ResourceItemsView.SelectedItems.Remove(items);
-            }
-            else
-            {
-                ResourceItemsView.SelectedItems.Add(items);
-            }
-        }
-    }
-
-    private async void AppBarButton_Click(object sender, RoutedEventArgs e)
-    {
-        await ViewModel.Add();
-    }
-    private async void ResourceItem_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-    {
-        await ViewModel.OpenCommand.ExecuteAsync(DecidePath(sender, ViewModel.RightTappedPhoto, ViewModel.SelectedImage));
+        ViewModel.Dispose();
+        WeakReferenceMessenger.Default.Unregister<string, string>(ViewModel, "NoResultAvaliable");
+        WeakReferenceMessenger.Default.Unregister<string, string>(ViewModel, "NavigateToNewResult");
     }
 
     private void NavigationViewer_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
     {
-        if((string)args.InvokedItemContainer.Tag == "Home")
+        if ((string)args.InvokedItemContainer.Tag == "Home")
             App.Current.MainWindow.Frame.GoBack();
+        else if ((string)args.InvokedItemContainer.Tag == "StartProcessing")
+            App.Current.MainWindow.Frame.Navigate(typeof(ProcessingPage), ViewModel.Detail.Photos);
     }
 
-    private void DeleteAccelerator_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
-    {
-        DeleteMenu_Click(null, null);
-    }
-
-    private void CopyAccelerator_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
-    {
-        CopyMenu_Click(null, null);
-    }
-
-    private async void PasteAccelerator_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
-    {
-        await ViewModel.PasteClipboardFiles();
-    }
+    
 
     protected override void OnNavigatedFrom(NavigationEventArgs e)
     {
-        ViewModel.Dispose();
+        if(e.SourcePageType != typeof(ProcessingPage))
+        {
+            ViewModel.Dispose();
+            WeakReferenceMessenger.Default.Unregister<string, string>(ViewModel, "NoResultAvaliable");
+            WeakReferenceMessenger.Default.Unregister<string, string>(ViewModel, "NavigateToNewResult");
+            App.Current.ExitProcess -= OnExit;
+        }
+
         base.OnNavigatedFrom(e);
+    }
+
+    public string GetQueryPlaceHolderText(string taskName) => $"Search in {taskName}";
+
+    
+    public double Decrease(int val) => val - 1;
+    public string StrDecrease(int val) => (val - 1).ToString();
+    public int FallbackToZero(int val) => val < 0 ? 0 : val;
+    public string StrFallbackToZero(int val) => (val < 0 ? 0 : val).ToString();
+
+
+    private async void PhotoGalleryViewer_AddResolve(Controls.PhotoGalleryViewer sender, Controls.AddPhotoResolveEventArgs args)
+    {
+        await ViewModel.AddPhoto(args.PhotoPath);
+    }
+
+    private async void PhotoGalleryViewer_CopyResolve(Controls.PhotoGalleryViewer sender, Controls.CopyPhotoResolveEventArgs args)
+    {
+        await PhotoItemOperationUtils.Copy(args.CopyItems);
+    }
+
+    private async void PhotoGalleryViewer_CopyAsBitmapResolve(Controls.PhotoGalleryViewer sender, Controls.CopyPhotoResolveEventArgs args)
+    {
+        // checked in control for single item
+        await PhotoItemOperationUtils.CopyAsBitmap(args.CopyItems[0]);
+    }
+
+    private async void PhotoGalleryViewer_CopyAsPathResolve(Controls.PhotoGalleryViewer sender, Controls.CopyPhotoResolveEventArgs args)
+    {
+        await PhotoItemOperationUtils.CopyAsPath(args.CopyItems);
+    }
+
+    private async void PhotoGalleryViewer_DeleteRequested(Controls.PhotoGalleryViewer sender, Controls.DeletePhotoRequestedEventArgs args)
+    {
+        await ViewModel.Delete(args.DeleteItem, (bool)args.State);
+    }
+
+    private async Task<object> PhotoGalleryViewer_DeleteResolving(Controls.PhotoGalleryViewer sender, Controls.DeletePhotoResolvingEventArgs args)
+    {
+        (bool cancel, bool removePhysicalFile) = await ViewModel.DeleteRequesting();
+        args.Cancel = cancel;
+        return removePhysicalFile;
+    }
+
+    private async void PhotoGalleryViewer_RenameResolve(Controls.PhotoGalleryViewer sender, Controls.RenameResolveEventArgs args)
+    {
+        await PhotoItemOperationUtils.Rename(args.RenameItem, args.NewName);
+    }
+
+    private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if(e.AddedItems.Any() && ViewModel.CurrentResult != ViewModel.NavigatingResult)
+            ResultViewFrame.Navigate(typeof(ResultView), new ResultViewNavigationParameter()
+            {
+                TaskDpmService = ViewModel.TaskDpmService,
+                NavigatingResult = ViewModel.CurrentResult
+            }, new Microsoft.UI.Xaml.Media.Animation.EntranceNavigationTransitionInfo());
+        if(ViewModel.CurrentResult != null)
+            ViewModel.NavigatingResult = ViewModel.CurrentResult;
+    }
+    public Visibility GetEmptyTipVisibility(ObservableCollection<FiltResult> results) => results.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+    public bool Not(bool b) => !b;
+    private void FilterBasedOnSelected_Invoked(Controls.PhotoGalleryViewer sender, Controls.ItemOperationInvokedEventArgs args)
+    {
+        App.Current.MainWindow.Frame.Navigate(typeof(ProcessingPage), EnumerableExtensions.AsObservable(args.OperationItems.ToList()));
+    }
+
+    private void SelectToPresent_Invoked(Controls.PhotoGalleryViewer sender, Controls.ItemOperationInvokedEventArgs args)
+    {
+        ViewModel.FiltTask.PresentPhoto = args.OperationItems[0].Path;
+    }
+
+    private void TextBox_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
+    {
+        if(sender.Text.Length > 0)
+            args.Cancel = true;
+    }
+
+    private void NavigationViewer_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+    {
+        if (args.IsSettingsSelected)
+        {
+            (sender.SelectedItem as NavigationViewItem).Tag = "Setting";
+           
+        }
     }
 }

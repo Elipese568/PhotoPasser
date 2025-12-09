@@ -86,9 +86,16 @@ public static class EnumerablePredictionExtension
 
         public IEnumerable<TElement> Use(Predicate<TElement> predicate) => new TakeEmunerable<TElement>(enumerable, predicate);
 
-        public ObservableCollection<TElement> AsObservable()
+        
+
+        public bool Contains(Predicate<TElement> predicate)
         {
-            return new ObservableCollection<TElement>(enumerable);
+            foreach (var item in enumerable)
+            {
+                if (predicate(item))
+                    return true;
+            }
+            return false;
         }
     }
 

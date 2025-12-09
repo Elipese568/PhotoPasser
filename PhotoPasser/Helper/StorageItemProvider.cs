@@ -47,6 +47,11 @@ public static class StorageItemProvider
         var file = await GetStorageFile(filePath);
         return file?.Path;
     }
+    public static async Task<string?> GetRawFilePath(Uri fileUri)
+    {
+        var file = await GetStorageFile(fileUri);
+        return file?.Path;
+    }
     public static async Task<FileInfo> GetFileInfo(Uri fileUri, bool returnNullOnUnexist = false)
         => await GetFileInfo(fileUri.LocalPath, returnNullOnUnexist);
     public static async Task<FileInfo?> GetFileInfo(string filePath, bool returnNullOnUnexist = false)
@@ -66,5 +71,10 @@ public static class StorageItemProvider
         {
             return null;
         }
+    }
+
+    public static async Task<StorageFolder> GetStorageFolder(Uri uri, bool returnNullOnUnexist = false)
+    {
+        return null;
     }
 }

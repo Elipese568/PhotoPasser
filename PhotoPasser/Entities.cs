@@ -38,7 +38,12 @@ public partial class FiltResult : ObservableObject
     [ObservableProperty]
     private ObservableCollection<PhotoInfo> _photos;
     [ObservableProperty]
+    private ObservableCollection<PhotoInfo> _pinnedPhotos;
+    [ObservableProperty]
     private DateTime _date;
+    [ObservableProperty]
+    private bool _isFavorite;
+
     public Guid ResultId { get; set; }
 
     
@@ -120,6 +125,10 @@ public partial class TaskDetail : ObservableObject
     private ObservableCollection<FiltResult> _results = new();
     [ObservableProperty]
     private ObservableCollection<PhotoInfo> _photos = new();
+    [ObservableProperty]
+    private ObservableCollection<PhotoInfo> _pinnedPhotos = new();
+
+
 }
 
 [JsonConverter(typeof(PhotoInfoJsonConverter))]

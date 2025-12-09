@@ -1,11 +1,12 @@
-﻿
-
+﻿//#define MOCKING
+//#define DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPTION
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -25,6 +26,7 @@ using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI.ViewManagement;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -67,21 +69,20 @@ namespace PhotoPasser
                             services.AddSingleton<ITaskItemProviderService, TaskItemProviderService>();
                             services.AddScoped<ITaskDetailPhysicalManagerService, TaskDetailPhysicalManagerService>();
 #endif
+                            services.AddTransient<IDialogService, DialogService>();
+                            services.AddTransient<IClipboardService, ClipboardService>();
                             services.AddSingleton<TaskOverview>()
                                     .AddSingleton<TaskOverviewViewModel>();
                         })
                         .Build();
 
             UnhandledException += App_UnhandledException;
-            AppDomain.CurrentDomain.ProcessExit += (s, e) =>
-            {
-                m_exitProcess.Invoke(this, EventArgs.Empty);
-            };
             Current = this;
         }
 
         private async void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
+            e.Handled = true;
             if (e.Exception != null)
             {
                 ContentDialog exceptionDialog = new()
@@ -94,7 +95,6 @@ namespace PhotoPasser
 
                 await exceptionDialog.ShowAsync();
             }
-            e.Handled = true;
         }
 
         public static T? GetService<T>()
@@ -115,6 +115,13 @@ namespace PhotoPasser
         protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             _window = new MainWindow();
+            SettingProvider.ApplySetting();
+            _window.Closed += (s, e) =>
+            {
+                m_exitProcess.Invoke(this, EventArgs.Empty);
+                CancellationToken cancellationToken = CancellationToken.None;
+                cancellationToken.WaitHandle.WaitOne(100);
+            };
             _window.Activate();
         }
 

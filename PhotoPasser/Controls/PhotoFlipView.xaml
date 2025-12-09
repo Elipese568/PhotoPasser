@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="PhotoPasser.Controls.PhotoFlipView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:PhotoPasser.Controls"
+    xmlns:pp="using:PhotoPasser"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:p="using:PhotoPasser.Primitive"
+    mc:Ignorable="d"
+    PointerEntered="UserControl_PointerEntered"
+    PointerExited="UserControl_PointerExited"
+    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:behavior="using:PhotoPasser.Behaviors"
+    KeyboardAcceleratorPlacementMode="Hidden"
+    x:Name="CtrlSelf">
+    <UserControl.Resources>
+        <x:Double x:Key="FlipViewButtonFontSize">14</x:Double>
+        <ControlTemplate x:Key="VerticalNextTemplate" TargetType="Button">
+            <Border Visibility="Collapsed"/>
+        </ControlTemplate>
+        <DataTemplate x:Name="ImageView">
+            <Image Source="{Binding Path,Converter={StaticResource UriImageSourceConverter}}" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </DataTemplate>
+        <DataTemplate x:Name="AdvancedImageView">
+            <local:ZoomableImageView ImageUri="{Binding Path}"/>
+        </DataTemplate>
+    </UserControl.Resources>
+    <UserControl.KeyboardAccelerators>
+        <KeyboardAccelerator Key="Left" Invoked="Previous_KeyboardAccelerator_Invoked"/>
+        <KeyboardAccelerator Key="Right" Invoked="Next_KeyboardAccelerator_Invoked"/>
+        <KeyboardAccelerator Modifiers="Shift" Key="Left" Invoked="GoFirst_KeyboardAccelerator_Invoked"/>
+        <KeyboardAccelerator Modifiers="Shift" Key="Right" Invoked="GoLast_KeyboardAccelerator_Invoked"/>
+        <KeyboardAccelerator Key="Home" Invoked="GoFirst_KeyboardAccelerator_Invoked"/>
+        <KeyboardAccelerator Key="End" Invoked="GoLast_KeyboardAccelerator_Invoked"/>
+    </UserControl.KeyboardAccelerators>
+    
+    <Grid>
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="HeaderShown">
+                <VisualState x:Name="ShowHeader">
+                    <VisualState.Storyboard>
+                        <Storyboard x:Name="ShowAni">
+                            <DoubleAnimation Storyboard.TargetName="HeaderTransform" Storyboard.TargetProperty="Y" From="-15" To="0" Duration="0:0:0.30">
+                                <DoubleAnimation.EasingFunction>
+                                    <QuarticEase/>
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation Storyboard.TargetName="ControlTransform" Storyboard.TargetProperty="Y" From="15" To="0" Duration="0:0:0.30">
+                                <DoubleAnimation.EasingFunction>
+                                    <QuarticEase/>
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation Storyboard.TargetName="Header" Storyboard.TargetProperty="Opacity" From="0.0" To="1.0" Duration="0:0:0.30">
+                                <DoubleAnimation.EasingFunction>
+                                    <QuarticEase/>
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation Storyboard.TargetName="FlowControl" Storyboard.TargetProperty="Opacity" From="0.0" To="1.0" Duration="0:0:0.30">
+                                <DoubleAnimation.EasingFunction>
+                                    <QuarticEase/>
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </VisualState.Storyboard>
+                </VisualState>
+                <VisualState x:Name="NormalHeader" >
+                    <VisualState.Setters>
+                        <Setter Target="Header.Margin" Value="15"/>
+                        <Setter Target="Header.Opacity" Value="1.0"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="HideHeader">
+                    <VisualState.Storyboard>
+                        <Storyboard x:Name="HideAni">
+                            <DoubleAnimation Storyboard.TargetName="HeaderTransform" Storyboard.TargetProperty="Y" From="0" To="-15" Duration="0:0:0.30">
+                                <DoubleAnimation.EasingFunction>
+                                    <QuarticEase/>
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation Storyboard.TargetName="Header" Storyboard.TargetProperty="Opacity" From="1.0" To="0.0" Duration="0:0:0.30">
+                                <DoubleAnimation.EasingFunction>
+                                    <QuarticEase/>
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation Storyboard.TargetName="ControlTransform" Storyboard.TargetProperty="Y" From="0" To="15" Duration="0:0:0.30">
+                                <DoubleAnimation.EasingFunction>
+                                    <QuarticEase/>
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation Storyboard.TargetName="FlowControl" Storyboard.TargetProperty="Opacity" From="1.0" To="0.0" Duration="0:0:0.30">
+                                <DoubleAnimation.EasingFunction>
+                                    <QuarticEase/>
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </VisualState.Storyboard>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+        <FlipView KeyboardAcceleratorPlacementMode="Hidden" x:Name="View" ItemTemplate="{x:Bind GetImageView(p:SettingProvider.Instance.AdvancedImageView),Mode=OneWay}" ItemsSource="{x:Bind Photos,Mode=OneWay}" Background="{x:Bind Background,Mode=OneWay}" SelectedIndex="{x:Bind SelectedIndex,Mode=OneTime}" SelectionChanged="FlipView_SelectionChanged" SelectedItem="{x:Bind SelectedImage,Mode=OneTime}">
+            <FlipView.KeyboardAccelerators>
+                <KeyboardAccelerator Key="Left" Invoked="Previous_KeyboardAccelerator_Invoked"/>
+                <KeyboardAccelerator Key="Right" Invoked="Next_KeyboardAccelerator_Invoked"/>
+                <KeyboardAccelerator Modifiers="Shift" Key="Left" Invoked="GoFirst_KeyboardAccelerator_Invoked"/>
+                <KeyboardAccelerator Modifiers="Shift" Key="Right" Invoked="GoLast_KeyboardAccelerator_Invoked"/>
+                <KeyboardAccelerator Key="Home" Invoked="GoFirst_KeyboardAccelerator_Invoked"/>
+                <KeyboardAccelerator Key="End" Invoked="GoLast_KeyboardAccelerator_Invoked"/>
+            </FlipView.KeyboardAccelerators>
+        </FlipView>
+        <ContentPresenter Name="Header" Width="Auto" MinWidth="144" Margin="15" Opacity="0.0" Padding="12" HorizontalAlignment="Center" VerticalAlignment="Top" CornerRadius="8" BorderBrush="{ThemeResource ControlStrokeColorOnAccentTertiaryBrush}" BorderThickness="1" Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}" Content="{x:Bind SelectedImage,Mode=OneWay}" ContentTemplate="{x:Bind HeaderTemplate,Mode=OneWay}">
+            <ContentPresenter.RenderTransform>
+                <TranslateTransform x:Name="HeaderTransform" Y="-15"/>
+            </ContentPresenter.RenderTransform>
+        </ContentPresenter>
+        <Grid Name="FlowControl" Margin="15" Opacity="0.0" HorizontalAlignment="Stretch" VerticalAlignment="Bottom">
+            <Grid.RenderTransform>
+                <TranslateTransform x:Name="ControlTransform" Y="15"/>
+            </Grid.RenderTransform>
+
+            <StackPanel Orientation="Horizontal" Padding="12" Spacing="4" HorizontalAlignment="Center" BorderBrush="{ThemeResource ControlStrokeColorForAAFillOnImage}" BorderThickness="1" Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}" CornerRadius="{ThemeResource OverlayCornerRadius}">
+                <Button x:Name="GoFirstButton" Click="GoFirstButton_Click" Width="40" Height="40" Style="{StaticResource SubtleButtonStyle}">
+                    <FontIcon Glyph="&#xE892;" FontSize="16" />
+                </Button>
+                <Button x:Name="PreviousButton" Click="PreviousButton_Click" Width="40" Height="40" Style="{StaticResource SubtleButtonStyle}">
+                    <FontIcon Glyph="&#xE72B;" FontSize="16" />
+                </Button>
+                <StackPanel VerticalAlignment="Center" Margin="8" Spacing="2">
+                    <ProgressBar HorizontalAlignment="Center" Width="100" Maximum="{x:Bind Decrease(Photos.Count),Mode=OneWay}" Minimum="0" Value="{x:Bind SelectedIndex,Mode=TwoWay}"/>
+                    <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondary}">
+                        <Run Text="{x:Bind StrFallbackToZero(SelectedIndex),Mode=OneWay}"/>
+                        <Run Text="/"/>
+                        <Run Text="{x:Bind StrDecrease(Photos.Count),Mode=OneWay}"/>
+                    </TextBlock>
+                </StackPanel>
+                <Button Name="NextButton" Click="NextButton_Click" Width="40" Height="40" Style="{StaticResource SubtleButtonStyle}">
+                    <FontIcon Glyph="&#xF0D2;" FontSize="16" />
+                </Button>
+                <Button Name="GoLastButton" Click="GoLastButton_Click" Width="40" Height="40" Style="{StaticResource SubtleButtonStyle}">
+                    <FontIcon Glyph="&#xE893;" FontSize="16" />
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>

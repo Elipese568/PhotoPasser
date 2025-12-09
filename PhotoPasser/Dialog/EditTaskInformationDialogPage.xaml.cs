@@ -52,17 +52,17 @@ public partial class AddTaskDialogViewModel : ObservableObject
 /// <summary>
 /// An empty page that can be used on its own or navigated to within a Frame.
 /// </summary>
-public sealed partial class EditTaskDialogPage : Page
+public sealed partial class EditTaskInformationDialogPage : Page
 {
     public AddTaskDialogViewModel ViewModel { get; } = new AddTaskDialogViewModel();
     private FiltTask? _originTask = null;
 
-    public EditTaskDialogPage()
+    public EditTaskInformationDialogPage()
     {
         InitializeComponent();
     }
 
-    public EditTaskDialogPage(FiltTask origin)
+    public EditTaskInformationDialogPage(FiltTask origin)
     {
         ViewModel.TaskName = origin.Name;
         ViewModel.Description = origin.Description;

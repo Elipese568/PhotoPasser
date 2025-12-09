@@ -23,4 +23,10 @@ public static class AsyncHelper
     {
         return asyncOperation.GetAwaiter().GetResult();
     }
+
+    // Non-generic Task synchronous wait helper
+    public static void Sync(this Task asyncOperation)
+    {
+        asyncOperation.GetAwaiter().GetResult();
+    }
 }

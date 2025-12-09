@@ -8,23 +8,13 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+                <ResourceDictionary Source="/Themes/Generic.xaml"/>
+                <ResourceDictionary Source="/Themes/Style.xaml"/>
                 <!-- Other merged dictionaries here -->
             </ResourceDictionary.MergedDictionaries>
-            <ResourceDictionary.ThemeDictionaries>
-                <ResourceDictionary x:Key="Default">
-                    <Color x:Key="CardBackgroundFillColorSecondarySoild">#FFF6F6F6</Color>
-                    <Color x:Key="CardBackgroundFillColorSecondaryTransparent">#00F6F6F6</Color>
-                </ResourceDictionary>
-                <ResourceDictionary x:Key="Light">
-                    <Color x:Key="CardBackgroundFillColorSecondarySoild">#FFF6F6F6</Color>
-                    <Color x:Key="CardBackgroundFillColorSecondaryTransparent">#00F6F6F6</Color>
-                </ResourceDictionary>
-                <ResourceDictionary x:Key="Dark">
-                    <Color x:Key="CardBackgroundFillColorSecondarySoild">#FF080808</Color>
-                    <Color x:Key="CardBackgroundFillColorSecondaryTransparent">#00080808</Color>
-                </ResourceDictionary>
-            </ResourceDictionary.ThemeDictionaries>
+
             <!-- Other app resources here -->
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>

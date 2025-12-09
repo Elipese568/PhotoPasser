@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
@@ -12,6 +13,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
@@ -42,42 +44,88 @@ public enum SortBy
     TotalSize
 }
 
-public partial class TaskWorkspaceViewModel : ObservableObject, IDisposable
+public class EmptyPhotoCollection : ObservableCollection<PhotoInfo>
+{
+
+}
+
+
+public partial class TaskWorkspaceViewModel : ObservableRecipient, IDisposable
 {
     private readonly ITaskDetailPhysicalManagerService _taskDpmService;
+    public ITaskDetailPhysicalManagerService TaskDpmService => _taskDpmService;
+    private readonly IClipboardService _clipboardService;
+    private readonly IDialogService _dialogService;
+    private readonly IWorkspaceViewManager? _workspaceViewManager;
+
+    private WorkspaceViewState? _workspaceStateCache;
+    private Timer? _saveDebounceTimer;
+    private readonly TimeSpan _saveDebounceDelay = TimeSpan.FromMilliseconds(500);
 
     [ObservableProperty]
     private PhotoInfo _selectedImage;
 
-    [ObservableProperty]
-    private SortBy _sortBy;
+    public SortBy SortBy
+    {
+        get => _workspaceStateCache?.SortBy ?? default;
+        set
+        {
+            if (_workspaceStateCache.SortBy == value) return;
+
+            _workspaceStateCache.SortBy = value;
+            DebouncedSaveWorkspaceState();
+        }
+    }
+
+
+    public SortOrder SortOrder
+    {
+        get => _workspaceStateCache?.SortOrder ?? default;
+        set
+        {
+            if (_workspaceStateCache.SortOrder == value) return;
+
+            _workspaceStateCache.SortOrder = value;
+            DebouncedSaveWorkspaceState();
+        }
+    }
+
+    
 
     [ObservableProperty]
-    private SortOrder _sortOrder;
+    private ObservableCollection<PhotoInfo> _searchResult = new EmptyPhotoCollection();
 
     [ObservableProperty]
-    private Visibility _fileDetailHeaderVisibility = Visibility.Collapsed;
+    private FiltResult? _currentResult;
+
+    private ObservableCollection<FiltResult> _results;
+    private ObservableCollection<FiltResult> _favoriteResults;
 
     [ObservableProperty]
-    private bool _isMultiSelection;
+    private ObservableCollection<FiltResult> _displayedResults;
+    [ObservableProperty]
+    private int _displayedResultSelectedIndex;
+    [ObservableProperty]
+    private bool _isFavoriteResultsSelection;
+    [ObservableProperty]
+    private FiltResult _navigatingResult;
 
     public FiltTask FiltTask { get; }
     public TaskDetail Detail { get; }
-    public FiltResult CurrentResult { get; }
-    public PhotoInfo RightTappedPhoto { get; set; }
-    public BitmapImage PictureExtensionTrumbull { get; set; }
+
+
+
+    private readonly object _sync;
 
     public DisplayView CurrentView
     {
-        get => field;
+        get => _workspaceStateCache?.CurrentView ?? default;
         set
         {
-            if (field != value)
-            {
-                field = value;
-                OnPropertyChanged(nameof(CurrentView));
-                FileDetailHeaderVisibility = value == DisplayView.Details ? Visibility.Visible : Visibility.Collapsed;
-            }
+            if (_workspaceStateCache.CurrentView == value) return;
+
+            _workspaceStateCache.CurrentView = value;
+            DebouncedSaveWorkspaceState();
         }
     }
 
@@ -87,91 +135,173 @@ public partial class TaskWorkspaceViewModel : ObservableObject, IDisposable
         _taskDpmService = service;
         Detail = detail;
         CurrentResult = result;
-    }
+        _workspaceViewManager = service.WorkspaceViewManager;
+        // try resolve clipboard service from root provider (scoped provider not available here)
+        _clipboardService = App.GetService<IClipboardService>();
+        _dialogService = App.GetService<IDialogService>();
+        
+        _results = Detail.Results;
+        _favoriteResults = new ObservableCollection<FiltResult>(Detail.Results.Where(r => r.IsFavorite));
+        _displayedResults = _results;
 
-    [RelayCommand]
-    public async Task Open(object param)
-    {
-        if (param is IEnumerable<PhotoInfo> photos)
+        WeakReferenceMessenger.Default.Register<FiltResult, string>(this, "AddToFavorite", (r, m) =>
         {
-            foreach (var photo in photos)
+            m.IsFavorite = true;
+            _favoriteResults.Add(m);
+        });
+
+        WeakReferenceMessenger.Default.Register<FiltResult, string>(this, "RemoveFromFavorite", (r, m) =>
+        {
+            m.IsFavorite = false;
+            _favoriteResults.Remove(m);
+            if (!_favoriteResults.Any() && IsFavoriteResultsSelection)
             {
-                var file = await StorageItemProvider.GetStorageFile(photo.Path);
-                await Launcher.LaunchFileAsync(file);
+                IsFavoriteResultsSelection = false;
+                DisplayedResultSelectedIndex = _results.IndexOf(m);
             }
-        }
-        else if (param is PhotoInfo photo)
-        {
-            var file = await StorageItemProvider.GetStorageFile(photo.Path);
-            await Launcher.LaunchFileAsync(file);
-        }
-    }
+                
+        });
 
-    [RelayCommand]
-    public async Task OpenInExplorer(object param)
-    {
-        // 禁止多选
-        if (param is PhotoInfo photo)
+        WeakReferenceMessenger.Default.Register<FiltResult, string>(this, "DeleteResult", (r, m) =>
         {
-            StorageFolder folder = await StorageItemProvider.GetStorageFolderFromFileParent(photo.Path);
-            await Launcher.LaunchFolderAsync(folder);
-        }
-    }
-
-    [RelayCommand]
-    public async Task Copy(object param)
-    {
-        if (param is IEnumerable<PhotoInfo> photos)
-        {
-            var files = new List<StorageFile>();
-            foreach (var photo in photos)
+            Detail.Results.Remove(m);
+            _favoriteResults.Remove(m);
+            if (_currentResult == m || _navigatingResult == m)
             {
-                var file = await StorageItemProvider.GetStorageFile(photo.Path);
-                if (file != null) files.Add(file);
+                if (_displayedResults.FirstOrDefault() is FiltResult next)
+                {
+                    CurrentResult = next;
+                    NavigatingResult = next;
+                }
+                else
+                {
+                    CurrentResult = null;
+                    NavigatingResult = null;
+                    WeakReferenceMessenger.Default.Send("NoResultAvaliable", "NoResultAvaliable");
+                }
             }
-            var dataPackage = new Windows.ApplicationModel.DataTransfer.DataPackage();
-            dataPackage.SetStorageItems(files);
-            Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(dataPackage);
-        }
-        else if (param is PhotoInfo photo)
+        });
+
+        WeakReferenceMessenger.Default.Register<FiltingFinishedMessage>(this, (r, m) =>
         {
-            var dataPackage = new Windows.ApplicationModel.DataTransfer.DataPackage();
-            dataPackage.SetStorageItems([await StorageItemProvider.GetStorageFile(photo.Path)]);
-            Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(dataPackage);
-        }
+            var resultObj = new FiltResult()
+            {
+                Date = DateTime.Now,
+                Description = m.Description,
+                Name = m.Name,
+                Photos = m.FiltedPhotos.AsObservable(),
+                PinnedPhotos = [],
+                IsFavorite = false,
+                ResultId = Guid.NewGuid()
+            };
+            Detail.Results.Add(resultObj);
+            CurrentResult = resultObj;
+            DisplayedResults = _results;
+            DisplayedResultSelectedIndex = DisplayedResults.IndexOf(NavigatingResult);
+            IsFavoriteResultsSelection = false;
+            _taskDpmService.ProcessPhysicalResultAsync(resultObj).ConfigureAwait(false);
+            WeakReferenceMessenger.Default.Send(resultObj, "NavigateToNewResult");
+        });
+
+        PropertyChanging += TaskWorkspaceViewModel_PropertyChanging;
     }
 
-    [RelayCommand]
-    public void CopyAsPath(object param)
+    private void TaskWorkspaceViewModel_PropertyChanging(object? sender, System.ComponentModel.PropertyChangingEventArgs e)
     {
-        if (param is IEnumerable<PhotoInfo> photos)
+        if (e.PropertyName == nameof(IsFavoriteResultsSelection))
         {
-            var dataPackage = new Windows.ApplicationModel.DataTransfer.DataPackage();
-            dataPackage.SetText(string.Join("\r\n", photos.Select(p => p.Path)));
-            Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(dataPackage);
-        }
-        else if (param is PhotoInfo photo)
-        {
-            var dataPackage = new Windows.ApplicationModel.DataTransfer.DataPackage();
-            dataPackage.SetText(photo.Path);
-            Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(dataPackage);
+            if (CurrentResult != null)
+                NavigatingResult = CurrentResult;
+            DisplayedResults = !IsFavoriteResultsSelection ? _favoriteResults : _results;
+            DisplayedResultSelectedIndex = DisplayedResults.IndexOf(NavigatingResult);
         }
     }
 
-    [RelayCommand]
-    public async Task CopyAsBitmap(object param)
+    public async Task Initialize()
     {
-        // 禁止多选
-        if (param is PhotoInfo photo)
+        if (_workspaceViewManager != null)
         {
-            var dataPackage = new Windows.ApplicationModel.DataTransfer.DataPackage();
-            dataPackage.SetBitmap(RandomAccessStreamReference.CreateFromFile(await StorageItemProvider.GetStorageFile(photo.Path)));
-            Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(dataPackage);
+            _workspaceViewManager.StateChanged += WorkspaceViewManager_StateChanged;
+            await LoadWorkspaceStateAsync();
         }
     }
 
-    [RelayCommand]
-    public async Task Delete(object param)
+    private void WorkspaceViewManager_StateChanged(object? sender, WorkspaceViewState e)
+    {
+        // external change -> apply
+        ApplyWorkspaceState(e);
+    }
+
+    public void ApplyWorkspaceState(WorkspaceViewState? state)
+    {
+        if (state == null) return;
+
+        _workspaceStateCache = state;
+        CurrentView = state.CurrentView;
+        SortBy = state.SortBy;
+        SortOrder = state.SortOrder;
+        SearchResult = new EmptyPhotoCollection();
+        // selection restoration should be handled in view (page) because it requires UI elements
+    }
+
+    private async Task LoadWorkspaceStateAsync()
+    {
+        var st = await _workspaceViewManager!.LoadAsync();
+        if (st != null)
+        {
+            ApplyWorkspaceState(st);
+        }
+    }
+
+    private void DebouncedSaveWorkspaceState()
+    {
+        _saveDebounceTimer?.Change(Timeout.Infinite, Timeout.Infinite);
+        _saveDebounceTimer ??= new Timer(async _ => await SaveWorkspaceStateAsync(), null, Timeout.Infinite, Timeout.Infinite);
+        _saveDebounceTimer.Change(_saveDebounceDelay, Timeout.InfiniteTimeSpan);
+    }
+
+    private async Task SaveWorkspaceStateAsync()
+    {
+        try
+        {
+            var state = new WorkspaceViewState
+            {
+                CurrentView = this.CurrentView,
+                SortBy = this.SortBy,
+                SortOrder = this.SortOrder,
+                SearchText = null // could be wired if you expose SearchText property
+            };
+            await _workspaceViewManager!.SaveAsync(state);
+        }
+        catch
+        {
+        }
+    }
+
+    public async Task AddPhoto(string path)
+    {
+        // Delegate validation/copying to the physical manager service
+        var prepared = await _taskDpmService.PrepareSourceAsync(path);
+        if (prepared == null)
+            return;
+
+        var photoInfo = await _taskDpmService.CreatePhotoInfoAsync(prepared);
+
+        Detail.Photos.Add(photoInfo);
+
+        if (Detail.Photos.Count == 1)
+        {
+            FiltTask.PresentPhoto = photoInfo.Path;
+        }
+    }
+    
+    public void Dispose()
+    {
+        _taskDpmService.Dispose();
+    }
+
+    
+    public async Task<(bool Cancel, bool RemovePhysical)> DeleteRequesting()
     {
         var textBlock = new TextBlock
         {
@@ -200,158 +330,31 @@ public partial class TaskWorkspaceViewModel : ObservableObject, IDisposable
             }
         });
 
-        ContentDialog cd = new ContentDialog()
+        if (!(await _dialogService.ShowConfirmAsync("Delete File", RemoveTips, "Delete", "Cancel")))
         {
-            Title = "Delete File",
-            Content =  RemoveTips,
-            PrimaryButtonText = "Delete",
-            CloseButtonText = "Cancel",
-            DefaultButton = ContentDialogButton.Close,
-            XamlRoot = App.Current.MainWindow.Content.XamlRoot,
-        };
-
-        if(await cd.ShowAsync() != ContentDialogResult.Primary)
-        {
-            return;
+            return (true, false);
         }
 
-        if (param is IEnumerable<PhotoInfo> photos)
-        {
-            foreach (var photo in photos.ToList())
-            {
-                var file = await StorageItemProvider.GetStorageFile(photo.Path, false);
-                if (FiltTask.CopySource || (file != null && (CheckToRemoveRealFile.IsChecked??false)))
-                    await file.DeleteAsync();
-                Detail.Photos.Remove(photo);
-            }
-        }
-        else if (param is PhotoInfo photo)
-        {
-            var file = await StorageItemProvider.GetStorageFile(photo.Path, false);
-            if (FiltTask.CopySource || (file != null && (CheckToRemoveRealFile.IsChecked ?? false)))
-                await file.DeleteAsync();
-            Detail.Photos.Remove(photo);
-        }
+        var shouldRemovePhysical = FiltTask.CopySource || (CheckToRemoveRealFile.IsChecked ?? false);
+
+        return (false, shouldRemovePhysical);
     }
 
-    [RelayCommand]
-    public async Task Rename((PhotoInfo photoInfo, string newName, bool inResourceView) param)
+    public async Task Delete(PhotoInfo photo, bool shouldRemovePhysical)
     {
-        (PhotoInfo photoInfo, string newName, bool inResourceView) = param;
-        if (inResourceView)
+        if (shouldRemovePhysical)
         {
-            // 资源视图：更新 TaskDetail.Photos
-            if (Detail?.Photos != null)
-                Detail.Photos[Detail.Photos.IndexOf(x => x.Path == photoInfo.Path)].UserName = newName;
-            OnPropertyChanged(nameof(Detail));
+            await _taskDpmService.DeletePhotoFileIfExistsAsync(photo.Path);
         }
-        else
+        Detail.Photos.Remove(photo);
+
+        if (!Detail.Photos.Any(x => x.Path == FiltTask.PresentPhoto))
         {
-            // 结果视图：更新 FiltResult.Photos
-            if (CurrentResult?.Photos != null)
-                CurrentResult.Photos[CurrentResult.Photos.IndexOf(x => x.Path == photoInfo.Path)].UserName = newName;
-            OnPropertyChanged(nameof(CurrentResult));
+            FiltTask.PresentPhoto = Detail.Photos.Count > 0 ? Detail.Photos[0].Path : App.Current.Resources["EmptyTaskItemPresentPhotoPath"] as string;
         }
     }
 
-    [RelayCommand]
-    public async Task ShowProperties(object param)
-    {
-        if (param is IEnumerable<PhotoInfo> photos)
-        {
-            var paths = await photos.Select(p => StorageItemProvider.GetRawFilePath(p.Path)).EvalResults().ToListAsync();
-            ShellInterop.ShowFileProperties(paths.ToArray());
-        }
-        else if (param is PhotoInfo photo)
-        {
-            ShellInterop.ShowFileProperties(await StorageItemProvider.GetRawFilePath(photo.Path), WinRT.Interop.WindowNative.GetWindowHandle(App.Current.MainWindow));
-        }
-    }
 
-    public async Task Add()
-    {
-        FileOpenPicker picker = new FileOpenPicker(App.Current.MainWindow.AppWindow.Id);
-        picker.FileTypeFilter.Add("*");
-        var files = await picker.PickMultipleFilesAsync();
-        if (files != null && files.Count > 0)
-        {
-            foreach (var file in files)
-            {
-                await AddPhoto(file.Path);
-            }
-        }
-    }
 
-    public async Task AddPhoto(string path)
-    {
-        Uri fileUri = new(path);
-        try
-        {
-            System.Drawing.Image.FromFile(fileUri.LocalPath);
-        }
-        catch
-        {
-            return;
-        }
-        if(FiltTask.CopySource)
-        {
-            fileUri = await _taskDpmService.CopySourceAsync(fileUri);
-        }
-
-        Detail.Photos.Add(await PhotoInfo.Create(fileUri.LocalPath));
-    }
-
-    public ObservableCollection<PhotoInfo> GetSortedPhotos(ObservableCollection<PhotoInfo> origin, SortBy sortBy, SortOrder order)
-    {
-        if(origin == null)
-        {
-            origin = new ObservableCollection<PhotoInfo>();
-            return origin;
-        }
-        return new (sortBy switch
-        {
-            SortBy.Name => order == SortOrder.Ascending
-                ? origin.OrderBy(x => x.UserName)
-                : origin.OrderByDescending(x => x.UserName),
-
-            SortBy.Type => order == SortOrder.Ascending
-                ? origin.OrderBy(x => x.UserName.Split(".")[^1])
-                : origin.OrderByDescending(x => x.UserName.Split(".")[^1]),
-
-            SortBy.DateCreated => order == SortOrder.Ascending
-                ? origin.OrderBy(x => x.DateCreated)
-                : origin.OrderByDescending(x => x.DateCreated),
-
-            SortBy.DateModified => order == SortOrder.Ascending
-                ? origin.OrderBy(x => x.DateModified)
-                : origin.OrderByDescending(x => x.DateModified),
-
-            SortBy.TotalSize => order == SortOrder.Ascending
-                ? origin.OrderBy(x => x.Size)
-                : origin.OrderByDescending(x => x.Size),
-
-            _ => origin // 可选的默认情况
-        });
-    }
-
-    public async Task PasteClipboardFiles()
-    {
-        var dataView = Clipboard.GetContent();
-        if(dataView.Contains(Windows.ApplicationModel.DataTransfer.StandardDataFormats.StorageItems))
-        {
-            var items = await dataView.GetStorageItemsAsync();
-            foreach (var item in items)
-            {
-                if (item is StorageFile file)
-                {
-                    await AddPhoto(file.Path);
-                }
-            }
-        }
-    }
-
-    public void Dispose()
-    {
-        _taskDpmService.Dispose();
-    }
+    
 }
