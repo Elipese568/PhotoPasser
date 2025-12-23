@@ -1,4 +1,4 @@
-﻿//#define MOCKING
+﻿#define MOCKING
 //#define DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPTION
 using System;
 using System.Collections.Generic;

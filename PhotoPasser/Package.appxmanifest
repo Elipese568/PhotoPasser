@@ -8,15 +8,15 @@
   IgnorableNamespaces="uap rescap">
 
   <Identity
-    Name="c60f2a04-48c0-42de-9534-148995c7c92e"
-    Publisher="CN=Admin"
+    Name="Elipese.PhotoPasser"
+    Publisher="CN=142EE321-56D7-4809-A287-4150F4D70443"
     Version="1.0.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="c60f2a04-48c0-42de-9534-148995c7c92e" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>PhotoPasser</DisplayName>
-    <PublisherDisplayName>Admin</PublisherDisplayName>
+    <DisplayName>Photo Passer</DisplayName>
+    <PublisherDisplayName>Elipese</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
@@ -39,7 +39,7 @@
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png">
-        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png"  Square71x71Logo="Assets\SmallTile.png" Square310x310Logo="Assets\LargeTile.png"/>
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>
     </Application>
