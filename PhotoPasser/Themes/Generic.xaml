@@ -2,11 +2,11 @@
  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
  xmlns:local="using:PhotoPasser"
-    xmlns:controls="using:PhotoPasser.Controls"
+ xmlns:controls="using:PhotoPasser.Controls"
  xmlns:win2d="using:Microsoft.Graphics.Canvas.UI.Xaml" xmlns:conv="using:PhotoPasser.Converters">
 
     <ItemsPanelTemplate x:Key="TrumbullViewPanel">
-        <local:AdaptiveWrapPanel HorizontalSpacing="8" VerticalSpacing="8"/>
+        <controls:AdaptiveWrapPanel HorizontalSpacing="8" VerticalSpacing="8"/>
     </ItemsPanelTemplate>
     <ItemsPanelTemplate x:Key="TilesViewPanel">
         <ItemsWrapGrid Orientation="Horizontal"/>

@@ -14,7 +14,7 @@ public class TextBoxDialog : ContentDialog
         Title = title;
         PrimaryButtonText = "OK";
         CloseButtonText = "Cancel";
-        _textBox = new TextBox { Text = defaultText, Margin = new Thickness(0,8,0,0)};
+        _textBox = new TextBox { Text = defaultText, Margin = new Thickness(0, 8, 0, 0) };
         Content = new StackPanel
         {
             Children =
@@ -23,7 +23,7 @@ public class TextBoxDialog : ContentDialog
                 _textBox
             }
         };
-        if(!allowWhiteSpace)
+        if (!allowWhiteSpace)
         {
             _textBox.TextChanged += (s, e) =>
             {
@@ -33,6 +33,6 @@ public class TextBoxDialog : ContentDialog
                     IsPrimaryButtonEnabled = true;
             };
         }
-        
+
     }
 }
