@@ -42,6 +42,9 @@
             <TextBlock>Once it’s gone, it’s gone. Are you sure you want to delete the file(s)?</TextBlock>
             <CheckBox x:Name="CheckToRemoveRealFile" Content="Remove physical file"/>
         </StackPanel>
+        <conv:BooleanToObjectConverter x:Key="EnabledTextConverter"
+                                       TrueObject="Enabled"
+                                       FalseObject="Disabled"/>
     </Page.Resources>
     <NavigationView x:Name="NavigationViewer" 
                     IsSettingsVisible="True" 
@@ -51,21 +54,21 @@
                     PaneTitle="{x:Bind FiltTask.Name}" 
                     ItemInvoked="NavigationViewer_ItemInvoked">
         <NavigationView.MenuItems>
-            <NavigationViewItem Content="Resources" Icon="Library" Tag="Resources" IsSelected="True"/>
-            <NavigationViewItem Content="Results" Tag="Results">
+            <NavigationViewItem x:Uid="ms-resource:///TaskWorkspace/ResourcesNavigationItem" Icon="Library" Tag="Resources" IsSelected="True"/>
+            <NavigationViewItem x:Uid="ms-resource:///TaskWorkspace/ResultsNavigationItem" Tag="Results">
                 <NavigationViewItem.Icon>
                     <FontIcon Glyph="&#xF168;" />
                 </NavigationViewItem.Icon>
             </NavigationViewItem>
-            <NavigationViewItem Content="Properties" Tag="Properties">
+            <NavigationViewItem x:Uid="ms-resource:///TaskWorkspace/PropertiesNavigationItem" Tag="Properties">
                 <NavigationViewItem.Icon>
                     <FontIcon Glyph="&#xE946;" />
                 </NavigationViewItem.Icon>
             </NavigationViewItem>
         </NavigationView.MenuItems>
         <NavigationView.FooterMenuItems>
-            <NavigationViewItem Content="Home" Icon="Home" Tag="Home" SelectsOnInvoked="True"/>
-            <NavigationViewItem Content="Start Filtering" Icon="Play" Tag="StartProcessing" SelectsOnInvoked="True"/>
+            <NavigationViewItem x:Uid="ms-resource:///TaskWorkspace/HomeNavigationItem" Icon="Home" Tag="Home" SelectsOnInvoked="True"/>
+            <NavigationViewItem x:Uid="ms-resource:///TaskWorkspace/StartFilteringNavigationItem" Icon="Play" Tag="StartFiltering" SelectsOnInvoked="True"/>
         </NavigationView.FooterMenuItems>
         <tk:SwitchPresenter Grid.Row="1" Value="{Binding SelectedItem.Tag,ElementName=NavigationViewer}">
             <tk:SwitchPresenter.ContentTransitions>
@@ -80,7 +83,7 @@
                         <RowDefinition Height="1" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" x:Name="ResTitle" Margin="36,40,36,36" Text="Resources" Style="{ThemeResource TitleTextBlockStyle}"/>
+                    <TextBlock Grid.Row="0" x:Uid="ms-resource:///TaskWorkspace/ResourcesViewTitle" x:Name="ResTitle" Margin="36,40,36,36" Text="Resources" Style="{ThemeResource TitleTextBlockStyle}"/>
                     <Border Background="{ThemeResource LayerOnMicaBaseAltFillColorDefaultBrush}"
                             Height="{Binding ActualHeight,ElementName=ResourceOperationBar}"
                             RelativePanel.AlignLeftWithPanel="True"
@@ -106,7 +109,7 @@
                                                  x:Name="ResourceView">
                         <controls:PhotoGalleryViewer.ExtendedOperations>
                             <controls:PhotoItemOperation x:Name="SelectToPresent"
-                                                         OperationName="Select to present" 
+                                                         x:Uid="ms-resource:///TaskWorkspace/SelectToPresentOperation"
                                                          ShowAtCommandBar="True" 
                                                          Invoked="SelectToPresent_Invoked" 
                                                          Mode="Single">
@@ -115,7 +118,7 @@
                                 </controls:PhotoItemOperation.DescriptiveIcon>
                             </controls:PhotoItemOperation>
                             <controls:PhotoItemOperation x:Name="FilterBasedOnSelected" 
-                                                         OperationName="Filter based on selected" 
+                                                         x:Uid="ms-resource:///TaskWorkspace/FilterBasedOnSelectedOperation"
                                                          ShowAtCommandBar="True" 
                                                          Invoked="FilterBasedOnSelected_Invoked" 
                                                          Mode="Multiply"
@@ -137,10 +140,10 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0" VerticalAlignment="Center" Style="{ThemeResource TitleTextBlockStyle}">Results</TextBlock>
+                            <TextBlock Grid.Row="0" x:Uid="ms-resource:///TaskWorkspace/ResultsViewTitle" VerticalAlignment="Center" Style="{ThemeResource TitleTextBlockStyle}"/>
                             <SelectorBar x:Name="ResultsSelector" Grid.Row="1">
-                                <SelectorBarItem x:Name="AllResultsSelectedItem" Tag="All" Text="All Results" Icon="List" IsSelected="{x:Bind Not(ViewModel.IsFavoriteResultsSelection),Mode=OneWay}"/>
-                                <SelectorBarItem x:Name="FavoriteResultsSelectedItem" Tag="Favorite" Text="Favorite Results" IsSelected="{x:Bind ViewModel.IsFavoriteResultsSelection,Mode=TwoWay}">
+                                <SelectorBarItem x:Uid="ms-resource:///TaskWorkspace/AllResultsSelectedItem" x:Name="AllResultsSelectedItem" Tag="All" Icon="List" IsSelected="{x:Bind Not(ViewModel.IsFavoriteResultsSelection),Mode=OneWay}"/>
+                                <SelectorBarItem x:Uid="ms-resource:///TaskWorkspace/FavoriteResultsSelectedItem" x:Name="FavoriteResultsSelectedItem" Tag="Favorite" IsSelected="{x:Bind ViewModel.IsFavoriteResultsSelection,Mode=TwoWay}">
                                     <SelectorBarItem.Icon>
                                         <FontIcon Glyph="&#xE735;" Foreground="{ThemeResource SystemFillColorCaution}" />
                                     </SelectorBarItem.Icon>
@@ -154,11 +157,11 @@
                                       SelectionChanged="ListView_SelectionChanged" 
                                       ItemsSource="{x:Bind ViewModel.DisplayedResults, Mode=OneWay}"/>
                             <TextBlock Grid.Row="2" 
+                                       x:Uid="ms-resource:///TaskWorkspace/NoResultsTip"
                                        VerticalAlignment="Center" 
                                        HorizontalAlignment="Center" 
                                        Foreground="{ThemeResource TextFillColorSecondary}" 
                                        Visibility="{x:Bind GetEmptyTipVisibility(ViewModel.DisplayedResults),Mode=OneWay}">
-                                No items
                             </TextBlock>
                         </Grid>
                     </SplitView.Pane>
@@ -171,12 +174,33 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" Text="Properties" Style="{ThemeResource TitleTextBlockStyle}"/>
-                    <StackPanel Grid.Row="1" Spacing="16">
-                        <TextBox Header="Name" Text="{x:Bind ViewModel.FiltTask.Name,Mode=TwoWay}"/>
-                        <TextBox Header="Description" AcceptsReturn="True" Text="{x:Bind ViewModel.FiltTask.Description,Mode=TwoWay}"/>
-                        <TextBox Header="Destination Path" BeforeTextChanging="TextBox_BeforeTextChanging" Grid.Column="0" Text="{x:Bind ViewModel.FiltTask.DestinationPath,Mode=OneWay}" />
-                        <CheckBox Content="Copy Source" IsChecked="{x:Bind ViewModel.FiltTask.CopySource,Mode=TwoWay}" IsEnabled="False"/>
+                    <TextBlock Grid.Row="0" x:Uid="ms-resource:///TaskWorkspace/PropertiesViewTitle" Style="{ThemeResource TitleTextBlockStyle}"/>
+                    
+                    <StackPanel Grid.Row="1" Spacing="4">
+                        <tk:SettingsCard x:Uid="ms-resource:///TaskWorkspace/NameProperty">
+                            <tk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE8AC;" />
+                            </tk:SettingsCard.HeaderIcon>
+                            <TextBox Text="{x:Bind ViewModel.FiltTask.Name,Mode=TwoWay}"/>
+                        </tk:SettingsCard>
+                        <tk:SettingsCard x:Uid="ms-resource:///TaskWorkspace/DescriptionProperty">
+                            <tk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE8E4;" />
+                            </tk:SettingsCard.HeaderIcon>
+                            <TextBox Text="{x:Bind ViewModel.FiltTask.Description,Mode=TwoWay}" AcceptsReturn="True" TextWrapping="Wrap"/>
+                        </tk:SettingsCard>
+                        <tk:SettingsCard x:Uid="ms-resource:///TaskWorkspace/DestinationPathProperty">
+                            <tk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE8B7;" />
+                            </tk:SettingsCard.HeaderIcon>
+                            <TextBlock Text="{x:Bind ViewModel.FiltTask.DestinationPath}" IsTextSelectionEnabled="True" Foreground="{ThemeResource TextFillColorSecondary}"/>
+                        </tk:SettingsCard>
+                        <tk:SettingsCard x:Uid="ms-resource:///TaskWorkspace/CopySourceProperty">
+                            <tk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE8C8;" />
+                            </tk:SettingsCard.HeaderIcon>
+                            <TextBlock Foreground="{ThemeResource TextFillColorSecondary}" Text="{x:Bind ViewModel.FiltTask.CopySource,Converter={StaticResource EnabledTextConverter}}"/>
+                        </tk:SettingsCard>
                     </StackPanel>
                 </Grid>
             </tk:Case>
@@ -186,19 +210,28 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" Text="Setting" Style="{ThemeResource TitleTextBlockStyle}"/>
-                    <StackPanel Grid.Row="1" Spacing="16">
-                        <tk:SettingsCard Header="App theme">
+                    <TextBlock Grid.Row="0" x:Uid="ms-resource:///TaskWorkspace/SettingsViewTitle" Style="{ThemeResource TitleTextBlockStyle}"/>
+                    <StackPanel Grid.Row="1" Spacing="4">
+                        <tk:SettingsCard x:Uid="ms-resource:///TaskWorkspace/AppThemeSetting">
                             <tk:SettingsCard.HeaderIcon>
                                 <FontIcon Glyph="&#xE790;" />
                             </tk:SettingsCard.HeaderIcon>
                             <ComboBox SelectedIndex="{x:Bind p:SettingProvider.Instance.RequestedTheme,Mode=TwoWay}">
-                                <ComboBoxItem>Light</ComboBoxItem>
-                                <ComboBoxItem>Dark</ComboBoxItem>
-                                <ComboBoxItem>System</ComboBoxItem>
+                                <ComboBoxItem x:Uid="ms-resource:///TaskWorkspace/SystemThemeItem"/>
+                                <ComboBoxItem x:Uid="ms-resource:///TaskWorkspace/LightThemeItem"/>
+                                <ComboBoxItem x:Uid="ms-resource:///TaskWorkspace/DarkThemeItem"/>
                             </ComboBox>
                         </tk:SettingsCard>
-                        <tk:SettingsCard Header="Advanced Image View">
+                        <tk:SettingsCard x:Uid="ms-resource:///TaskWorkspace/LanguageSetting">
+                            <tk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE774;" />
+                            </tk:SettingsCard.HeaderIcon>
+                            <ComboBox SelectedIndex="{x:Bind p:SettingProvider.Instance.Language,Mode=TwoWay}">
+                                <ComboBoxItem>简体中文</ComboBoxItem>
+                                <ComboBoxItem>English(United State)</ComboBoxItem>
+                            </ComboBox>
+                        </tk:SettingsCard>
+                        <tk:SettingsCard x:Uid="ms-resource:///TaskWorkspace/AdvancedImageViewSetting">
                             <tk:SettingsCard.HeaderIcon>
                                 <FontIcon Glyph="&#xE752;" />
                             </tk:SettingsCard.HeaderIcon>

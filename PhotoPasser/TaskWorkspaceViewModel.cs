@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.WinUI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
@@ -8,6 +9,7 @@ using Microsoft.Windows.Storage.Pickers;
 using PhotoPasser.Converters;
 using PhotoPasser.Helper;
 using PhotoPasser.Service;
+using PhotoPasser.Strings;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -305,13 +307,13 @@ public partial class TaskWorkspaceViewModel : ObservableRecipient, IDisposable
     {
         var textBlock = new TextBlock
         {
-            Text = "Once it¡¯s gone, it¡¯s gone. Are you sure you want to delete the file(s)?"
+            Text = "DeleteTip".GetLocalized(LC.General).Replace(ReplaceItem.DeleteItemPron, "DeleteFilePron".GetLocalized(LC.TaskWorkspace))
         };
 
         // ´´½¨ CheckBox
         var CheckToRemoveRealFile = new CheckBox
         {
-            Content = "Remove physical file",
+            Content = "RemovePhysicalFileTip".GetLocalized(LC.TaskWorkspace),
             IsChecked = false
         };
         var RemoveTips = new StackPanel
@@ -330,7 +332,11 @@ public partial class TaskWorkspaceViewModel : ObservableRecipient, IDisposable
             }
         });
 
-        if (!(await _dialogService.ShowConfirmAsync("Delete File", RemoveTips, "Delete", "Cancel")))
+        if (!(await _dialogService.ShowConfirmAsync(
+            title: "DeleteFileTitle".GetLocalized(LC.TaskWorkspace),
+            message: RemoveTips,
+            primaryButtonText: "DeletePrompt".GetLocalized(LC.General),
+            closeButtonText: "CancelPrompt".GetLocalized(LC.General))))
         {
             return (true, false);
         }
@@ -353,8 +359,4 @@ public partial class TaskWorkspaceViewModel : ObservableRecipient, IDisposable
             FiltTask.PresentPhoto = Detail.Photos.Count > 0 ? Detail.Photos[0].Path : App.Current.Resources["EmptyTaskItemPresentPhotoPath"] as string;
         }
     }
-
-
-
-    
 }

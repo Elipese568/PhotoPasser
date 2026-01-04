@@ -1,0 +1,100 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+	<xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+		<xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+		<xsd:element name="root" msdata:IsDataSet="true">
+			<xsd:complexType>
+				<xsd:choice maxOccurs="unbounded">
+					<xsd:element name="data">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+								<xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+							</xsd:sequence>
+							<xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+							<xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+							<xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+							<xsd:attribute ref="xml:space" />
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="resheader">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+							</xsd:sequence>
+							<xsd:attribute name="name" type="xsd:string" use="required" />
+						</xsd:complexType>
+					</xsd:element>
+				</xsd:choice>
+			</xsd:complexType>
+		</xsd:element>
+	</xsd:schema>
+	<resheader name="resmimetype">
+		<value>text/microsoft-resx</value>
+	</resheader>
+	<resheader name="version">
+		<value>2.0</value>
+	</resheader>
+	<resheader name="reader">
+		<value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+	<resheader name="writer">
+		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+
+	<data name="CreateResultTitleTextBlock.Text" xml:space="preserve">
+    <value>Create Result Information</value>
+  </data>
+	<data name="NameTextBox.Header" xml:space="preserve">
+    <value>Name</value>
+  </data>
+	<data name="DescriptionTextBox.Header" xml:space="preserve">
+    <value>Description</value>
+  </data>
+	<data name="ExitButtonTextBlock.Text" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+	<data name="StartButtonTextBlock.Text" xml:space="preserve">
+    <value>Start</value>
+  </data>
+	<data name="CreatedAtRun.Text" xml:space="preserve">
+    <value>Created At </value>
+  </data>
+	<data name="ExitWarningRun.Text" xml:space="preserve">
+    <value>Once it exit, all of progress will lose</value>
+  </data>
+	<data name="ExitConfirmRun.Text" xml:space="preserve">
+    <value>Are you sure to exit?</value>
+  </data>
+	<data name="HeaderExitButtonTextBlock.Text" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+	<data name="FinishButtonTextBlock.Text" xml:space="preserve">
+    <value>Finish</value>
+  </data>
+	<data name="RejectAppBarButton.Label" xml:space="preserve">
+    <value>Reject</value>
+  </data>
+	<data name="AcceptAppBarButton.Label" xml:space="preserve">
+    <value>Accept</value>
+  </data>
+	<data name="RejectedLabelTextBlock.Text" xml:space="preserve">
+    <value>Rejected</value>
+  </data>
+	<data name="AcceptedLabelTextBlock.Text" xml:space="preserve">
+    <value>Accepted</value>
+  </data>
+	<data name="PhotosHeaderTextBlock.Text" xml:space="preserve">
+    <value>Photos</value>
+  </data>
+
+	<data name="ProjectNameRequiredErrorContent" xml:space="preserve">
+    <value>Name is required.</value>
+  </data>
+	<data name="UnvotedPhotosErrorContent" xml:space="preserve">
+    <value>There are some photos have not voted yet</value>
+  </data>
+	<data name="AllRejectedErrorContent" xml:space="preserve">
+    <value>All photos are rejected. Please accept at least one photo to finish filting.</value>
+  </data>
+</root>

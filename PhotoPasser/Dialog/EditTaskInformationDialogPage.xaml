@@ -12,19 +12,19 @@
         <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
     </Page.Resources>
     <StackPanel Spacing="16">
-        <TextBox Header="Name" Text="{x:Bind ViewModel.TaskName,Mode=TwoWay}"/>
-        <TextBox Header="Description" AcceptsReturn="True" Text="{x:Bind ViewModel.Description,Mode=TwoWay}"/>
+        <TextBox x:Uid="ms-resource:///EditTaskInformationDialogPage/NameTextBox" Text="{x:Bind ViewModel.TaskName,Mode=TwoWay}"/>
+        <TextBox x:Uid="ms-resource:///EditTaskInformationDialogPage/DescriptionTextBox" AcceptsReturn="True" Text="{x:Bind ViewModel.Description,Mode=TwoWay}"/>
         <Grid ColumnSpacing="8">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <StackPanel Orientation="Vertical" Spacing="8">
-                <TextBlock>Destination Path</TextBlock>
+                <TextBlock x:Uid="ms-resource:///EditTaskInformationDialogPage/DestinationPathTextBlock"/>
                 <TextBox IsEnabled="False" Grid.Column="0" Text="{x:Bind ViewModel.DestinationPath,Mode=OneWay}" />
             </StackPanel>
-            <Button VerticalAlignment="Bottom" Grid.Column="1" Content="Browse" Command="{x:Bind ViewModel.BrowseDestinationPathCommand}" IsEnabled="{x:Bind ViewModel.IsNonCreated}"/>
+            <Button x:Uid="ms-resource:///EditTaskInformationDialogPage/BrowseButton" VerticalAlignment="Bottom" Grid.Column="1" Command="{x:Bind ViewModel.BrowseDestinationPathCommand}" IsEnabled="{x:Bind ViewModel.IsNonCreated}"/>
         </Grid>
-        <CheckBox Content="Copy Source" IsChecked="{x:Bind ViewModel.CopySource,Mode=TwoWay}" IsEnabled="{x:Bind ViewModel.IsNonCreated}"/>
+        <CheckBox x:Uid="ms-resource:///EditTaskInformationDialogPage/CopySourceCheckBox" IsChecked="{x:Bind ViewModel.CopySource,Mode=TwoWay}" IsEnabled="{x:Bind ViewModel.IsNonCreated}"/>
     </StackPanel>
 </Page>

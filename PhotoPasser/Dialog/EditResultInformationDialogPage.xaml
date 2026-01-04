@@ -8,7 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
     <StackPanel Spacing="16">
-        <TextBox Header="Name" Text="{x:Bind ViewModel.Name,Mode=TwoWay}"/>
-        <TextBox Header="Description" Text="{x:Bind ViewModel.Description,Mode=TwoWay}"/>
+        <TextBox x:Uid="ms-resource:///EditResultInformationDialogPage/NameTextBox" Text="{x:Bind ViewModel.Name,Mode=TwoWay}"/>
+        <TextBox x:Uid="ms-resource:///EditResultInformationDialogPage/DescriptionTextBox" Text="{x:Bind ViewModel.Description,Mode=TwoWay}"/>
     </StackPanel>
 </Page>

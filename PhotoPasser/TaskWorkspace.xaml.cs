@@ -15,6 +15,7 @@ using PhotoPasser; // 添加此行以引用 TextBoxDialog
 using PhotoPasser.Dialog;
 using PhotoPasser.Helper;
 using PhotoPasser.Service;
+using PhotoPasser.Strings;
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -122,7 +123,7 @@ public sealed partial class TaskWorkspace : Page
     {
         if ((string)args.InvokedItemContainer.Tag == "Home")
             App.Current.MainWindow.Frame.GoBack();
-        else if ((string)args.InvokedItemContainer.Tag == "StartProcessing")
+        else if ((string)args.InvokedItemContainer.Tag == "StartFiltering")
             App.Current.MainWindow.Frame.Navigate(typeof(ProcessingPage), ViewModel.Detail.Photos);
     }
 
@@ -141,7 +142,7 @@ public sealed partial class TaskWorkspace : Page
         base.OnNavigatedFrom(e);
     }
 
-    public string GetQueryPlaceHolderText(string taskName) => $"Search in {taskName}";
+    public string GetQueryPlaceHolderText(string taskName) => "SearchPlaceholderFormat".GetLocalized(LC.TaskWorkspace).Replace("$NAME$", taskName);
 
     
     public double Decrease(int val) => val - 1;
@@ -196,6 +197,7 @@ public sealed partial class TaskWorkspace : Page
                 TaskDpmService = ViewModel.TaskDpmService,
                 NavigatingResult = ViewModel.CurrentResult
             }, new Microsoft.UI.Xaml.Media.Animation.EntranceNavigationTransitionInfo());
+
         if(ViewModel.CurrentResult != null)
             ViewModel.NavigatingResult = ViewModel.CurrentResult;
     }
@@ -211,18 +213,11 @@ public sealed partial class TaskWorkspace : Page
         ViewModel.FiltTask.PresentPhoto = args.OperationItems[0].Path;
     }
 
-    private void TextBox_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
-    {
-        if(sender.Text.Length > 0)
-            args.Cancel = true;
-    }
-
     private void NavigationViewer_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
     {
         if (args.IsSettingsSelected)
         {
             (sender.SelectedItem as NavigationViewItem).Tag = "Setting";
-           
         }
     }
 }

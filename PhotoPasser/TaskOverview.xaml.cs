@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.WinUI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -9,6 +10,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using PhotoPasser.Dialog;
 using PhotoPasser.Service;
+using PhotoPasser.Strings;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -68,10 +70,10 @@ public partial class TaskOverviewViewModel : ObservableRecipient
         var page = new EditTaskInformationDialogPage();
         ContentDialog cd = new ContentDialog()
         {
-            Title = "Add New Task",
+            Title = "AddNewTaskTitle".GetLocalized(LC.TaskOverview),
             Content = page,
-            PrimaryButtonText = "Add",
-            CloseButtonText = "Cancel",
+            PrimaryButtonText = "AddPrompt".GetLocalized(LC.General),
+            CloseButtonText = "CancelPrompt".GetLocalized(LC.General),
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = App.Current.MainWindow.Content.XamlRoot,
         };
@@ -101,10 +103,10 @@ public partial class TaskOverviewViewModel : ObservableRecipient
         var page = new EditTaskInformationDialogPage(task);
         ContentDialog cd = new ContentDialog()
         {
-            Title = "Edit Task Information",
+            Title = "EditTaskInformationTitle".GetLocalized(LC.TaskOverview),
             Content = page,
-            PrimaryButtonText = "Save",
-            CloseButtonText = "Cancel",
+            PrimaryButtonText = "SavePrompt".GetLocalized(LC.General),
+            CloseButtonText = "CancelPrompt".GetLocalized(LC.General),
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = App.Current.MainWindow.Content.XamlRoot,
         };
@@ -130,10 +132,10 @@ public partial class TaskOverviewViewModel : ObservableRecipient
     {
         ContentDialog cd = new ContentDialog()
         {
-            Title = "Delete Task",
-            Content = "Once it¡¯s gone, it¡¯s gone. Are you sure you want to delete it?",
-            PrimaryButtonText = "Delete",
-            CloseButtonText = "Cancel",
+            Title = "DeleteTaskTitle".GetLocalized(LC.TaskOverview),
+            Content = "DeleteTip".GetLocalized(LC.General).Replace(ReplaceItem.DeleteItemPron, "RemoveTaskPron".GetLocalized(LC.TaskOverview)),
+            PrimaryButtonText = "DeletePrompt".GetLocalized(LC.General),
+            CloseButtonText = "CancelPrompt".GetLocalized(LC.General),
             DefaultButton = ContentDialogButton.Close,
             XamlRoot = App.Current.MainWindow.Content.XamlRoot,
         };

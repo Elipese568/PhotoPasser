@@ -19,7 +19,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="1*" />
         </Grid.RowDefinitions>
-        <TextBlock Grid.Row="0" Style="{ThemeResource TitleTextBlockStyle}">Home</TextBlock>
+        <TextBlock x:Uid="ms-resource:///TaskOverview/HomeLabel" Grid.Row="0" Style="{ThemeResource TitleTextBlockStyle}"/>
         <Grid Grid.Row="1" RowSpacing="16">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
@@ -61,8 +61,8 @@
                                     <FontIcon Glyph="&#xE712;" />
                                     <Button.Flyout>
                                         <MenuFlyout>
-                                            <MenuFlyoutItem Text="Edit Information" Command="{Binding Value.ViewModel.EditTaskCommand, Source={StaticResource PageSelf}}" CommandParameter="{x:Bind}"/>
-                                            <MenuFlyoutItem Text="Delete" Command="{Binding Value.ViewModel.DeleteTaskCommand, Source={StaticResource PageSelf}}" CommandParameter="{x:Bind}"/>
+                                            <MenuFlyoutItem x:Uid="ms-resource:///TaskOverview/EditInformationFlyoutItem" Command="{Binding Value.ViewModel.EditTaskCommand, Source={StaticResource PageSelf}}" CommandParameter="{x:Bind}"/>
+                                            <MenuFlyoutItem x:Uid="ms-resource:///TaskOverview/DeleteFlyoutItem" Command="{Binding Value.ViewModel.DeleteTaskCommand, Source={StaticResource PageSelf}}" CommandParameter="{x:Bind}"/>
                                         </MenuFlyout>
                                     </Button.Flyout>
                                 </Button>

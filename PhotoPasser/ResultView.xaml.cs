@@ -13,6 +13,7 @@ using PhotoPasser.Converters;
 using PhotoPasser.Dialog;
 using PhotoPasser.Helper;
 using PhotoPasser.Service;
+using PhotoPasser.Strings;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -146,10 +147,10 @@ public sealed partial class ResultView : Page
         var page = new EditResultInformationDialogPage(ViewModel.CurrentResult);
         ContentDialog cd = new()
         {
-            Title = "Edit Result Information",
+            Title = "EditResultInformationTitle".GetLocalized(LC.ResultView),
             Content = page,
-            PrimaryButtonText = "Confirm",
-            CloseButtonText = "Cancel",
+            PrimaryButtonText = "SavePrompt".GetLocalized(LC.General),
+            CloseButtonText = "CancelPrompt".GetLocalized(LC.General),
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = this.XamlRoot
         };
@@ -174,7 +175,7 @@ public sealed partial class ResultView : Page
     private async void ExportButton_Click(object sender, RoutedEventArgs e)
     {
         FileSavePicker savePicker = new FileSavePicker(App.Current.MainWindow.AppWindow.Id);
-        savePicker.FileTypeChoices.Add("Zip Archive", [".zip"]);
+        savePicker.FileTypeChoices.Add("ZipDescriptor".GetLocalized(LC.General), [".zip"]);
         var file = await savePicker.PickSaveFileAsync();
         if (file == null)
             return;

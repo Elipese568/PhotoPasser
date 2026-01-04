@@ -1,6 +1,8 @@
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
+using CommunityToolkit.WinUI;
+using PhotoPasser.Strings;
 
 namespace PhotoPasser;
 
@@ -12,8 +14,8 @@ public class TextBoxDialog : ContentDialog
     public TextBoxDialog(string title, string label, string defaultText = "", bool allowWhiteSpace = true)
     {
         Title = title;
-        PrimaryButtonText = "OK";
-        CloseButtonText = "Cancel";
+        PrimaryButtonText = "OKPrompt".GetLocalized(LC.General);
+        CloseButtonText = "CancelPrompt".GetLocalized(LC.General);
         _textBox = new TextBox { Text = defaultText, Margin = new Thickness(0, 8, 0, 0) };
         Content = new StackPanel
         {

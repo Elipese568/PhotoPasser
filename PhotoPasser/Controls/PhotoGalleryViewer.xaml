@@ -14,73 +14,75 @@
     mc:Ignorable="d">
     <UserControl.Resources>
         <MenuFlyout x:Name="FileRightTapOperationsFlyout">
-            <MenuFlyoutItem Text="Open in File Explorer" Click="OpenInExplorerMenu_Click">
+            <MenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/OpenInExplorerFlyoutItem" Click="OpenInExplorerMenu_Click">
                 <MenuFlyoutItem.Icon>
                     <FontIcon Glyph="&#xE8DA;" />
                 </MenuFlyoutItem.Icon>
             </MenuFlyoutItem>
-            <MenuFlyoutItem Text="Open" Click="OpenMenu_Click">
+            <MenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/OpenFlyoutItem" Click="OpenMenu_Click">
                 <MenuFlyoutItem.Icon>
                     <FontIcon Glyph="&#xE8E5;" />
                 </MenuFlyoutItem.Icon>
             </MenuFlyoutItem>
             <MenuFlyoutSeparator Visibility="{x:Bind GetVisibility3(IsCopyEnabled,IsRenameEnabled,IsDeleteEnabled)}"/>
-            <MenuFlyoutItem Text="Copy" Click="CopyMenu_Click" Visibility="{x:Bind GetVisibility(IsCopyEnabled)}">
+            <MenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/CopyFlyoutItem" Click="CopyMenu_Click" Visibility="{x:Bind GetVisibility(IsCopyEnabled)}">
                 <MenuFlyoutItem.Icon>
                     <SymbolIcon Symbol="Copy"/>
                 </MenuFlyoutItem.Icon>
             </MenuFlyoutItem>
-            <MenuFlyoutItem Text="Rename" Click="RenameMenu_Click" Visibility="{x:Bind GetVisibility(IsRenameEnabled)}">
+            <MenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/RenameFlyoutItem" Click="RenameMenu_Click" Visibility="{x:Bind GetVisibility(IsRenameEnabled)}">
                 <MenuFlyoutItem.Icon>
                     <SymbolIcon Symbol="Rename"/>
                 </MenuFlyoutItem.Icon>
             </MenuFlyoutItem>
-            <MenuFlyoutItem Text="Delete" Click="DeleteMenu_Click" Visibility="{x:Bind GetVisibility(IsDeleteEnabled)}">
+            <MenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/DeleteFlyoutItem" Click="DeleteMenu_Click" Visibility="{x:Bind GetVisibility(IsDeleteEnabled)}">
                 <MenuFlyoutItem.Icon>
                     <SymbolIcon Symbol="Delete"/>
                 </MenuFlyoutItem.Icon>
             </MenuFlyoutItem>
             <MenuFlyoutSeparator/>
-            <MenuFlyoutItem Text="Copy as path" Click="CopyAsPathMenu_Click" Visibility="{x:Bind GetVisibility(IsCopyEnabled)}">
+            <MenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/CopyAsPathFlyoutItem" Click="CopyAsPathMenu_Click" Visibility="{x:Bind GetVisibility(IsCopyEnabled)}">
                 <MenuFlyoutItem.Icon>
                     <FontIcon Glyph="&#xE756;" />
                 </MenuFlyoutItem.Icon>
             </MenuFlyoutItem>
-            <MenuFlyoutItem Text="Copy as bitmap" Click="CopyAsBitmapMenu_Click" Visibility="{x:Bind GetVisibility(IsCopyEnabled)}">
+            <MenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/CopyAsBitmapFlyoutItem" Click="CopyAsBitmapMenu_Click" Visibility="{x:Bind GetVisibility(IsCopyEnabled)}">
                 <MenuFlyoutItem.Icon>
                     <FontIcon Glyph="&#xE91B;" />
                 </MenuFlyoutItem.Icon>
             </MenuFlyoutItem>
-            <MenuFlyoutItem Text="Properties" Click="PropertiesMenu_Click">
+            <MenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/PropertiesFlyoutItem" Click="PropertiesMenu_Click">
                 <MenuFlyoutItem.Icon>
                     <FontIcon Glyph="&#xE946;" />
                 </MenuFlyoutItem.Icon>
             </MenuFlyoutItem>
         </MenuFlyout>
+
         <MenuFlyout x:Name="FileRightTapOperationsFlyoutMulti">
-            <MenuFlyoutItem Text="Open" Click="OpenMenu_Click">
+            <MenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/OpenFlyoutItem" Click="OpenMenu_Click">
                 <MenuFlyoutItem.Icon>
                     <FontIcon Glyph="&#xE8E5;" />
                 </MenuFlyoutItem.Icon>
             </MenuFlyoutItem>
             <MenuFlyoutSeparator Visibility="{x:Bind GetVisibility2(IsCopyEnabled,IsDeleteEnabled)}"/>
-            <MenuFlyoutItem Text="Copy" Click="CopyMenu_Click" Visibility="{x:Bind GetVisibility(IsCopyEnabled)}">
+            <MenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/CopyFlyoutItem" Click="CopyMenu_Click" Visibility="{x:Bind GetVisibility(IsCopyEnabled)}">
                 <MenuFlyoutItem.Icon>
                     <SymbolIcon Symbol="Copy"/>
                 </MenuFlyoutItem.Icon>
             </MenuFlyoutItem>
-            <MenuFlyoutItem Text="Delete" Click="DeleteMenu_Click" Visibility="{x:Bind GetVisibility(IsDeleteEnabled)}">
+            <MenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/DeleteFlyoutItem" Click="DeleteMenu_Click" Visibility="{x:Bind GetVisibility(IsDeleteEnabled)}">
                 <MenuFlyoutItem.Icon>
                     <SymbolIcon Symbol="Delete"/>
                 </MenuFlyoutItem.Icon>
             </MenuFlyoutItem>
             <MenuFlyoutSeparator/>
-            <MenuFlyoutItem Text="Properties" Click="PropertiesMenu_Click">
+            <MenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/PropertiesFlyoutItem" Click="PropertiesMenu_Click">
                 <MenuFlyoutItem.Icon>
                     <FontIcon Glyph="&#xE946;" />
                 </MenuFlyoutItem.Icon>
             </MenuFlyoutItem>
         </MenuFlyout>
+
         <root:FileNameConverter x:Key="FileNameConverter"/>
         <conv:UriImageSourceConverter x:Key="UriImageSourceConverter"/>
         <ItemsPanelTemplate x:Name="TrumbullViewPanel">
@@ -191,32 +193,32 @@
                     </Style>
                 </CommandBar.Resources>
 
-                <AppBarButton Icon="Add" Label="Add" Click="AppBarButton_Click" Visibility="{x:Bind GetVisibility(IsAddEnabled)}"/>
+                <AppBarButton x:Uid="ms-resource:///PhotoGalleryViewer/AddAppBarButton" Icon="Add" Click="AppBarButton_Click" Visibility="{x:Bind GetVisibility(IsAddEnabled)}"/>
 
                 <AppBarSeparator Visibility="{x:Bind GetVisibility(IsAddEnabled)}"/>
 
-                <AppBarButton Icon="Copy" Width="40" LabelPosition="Collapsed" Visibility="{x:Bind GetVisibility(IsCopyEnabled)}" IsEnabled="{x:Bind SelectedImage,Converter={StaticResource NullEnableConverter},Mode=OneWay}" Click="CopyMenu_Click"/>
-                <AppBarButton Icon="Rename" Width="40" LabelPosition="Collapsed" Visibility="{x:Bind GetVisibility(IsRenameEnabled)}" IsEnabled="False" x:Name="RenameButton" Click="RenameMenu_Click"/>
-                <AppBarButton Icon="Delete" Width="40" LabelPosition="Collapsed" Visibility="{x:Bind GetVisibility(IsDeleteEnabled)}" IsEnabled="{x:Bind SelectedImage,Converter={StaticResource NullEnableConverter},Mode=OneWay}" Click="DeleteMenu_Click"/>
+                <AppBarButton x:Uid="ms-resource:///PhotoGalleryViewer/CopyAppBarButton" Icon="Copy" Width="40" LabelPosition="Collapsed" Visibility="{x:Bind GetVisibility(IsCopyEnabled)}" IsEnabled="{x:Bind SelectedImage,Converter={StaticResource NullEnableConverter},Mode=OneWay}" Click="CopyMenu_Click"/>
+                <AppBarButton x:Uid="ms-resource:///PhotoGalleryViewer/RenameAppBarButton" Icon="Rename" Width="40" LabelPosition="Collapsed" Visibility="{x:Bind GetVisibility(IsRenameEnabled)}" IsEnabled="False" x:Name="RenameButton" Click="RenameMenu_Click"/>
+                <AppBarButton x:Uid="ms-resource:///PhotoGalleryViewer/DeleteAppBarButton" Icon="Delete" Width="40" LabelPosition="Collapsed" Visibility="{x:Bind GetVisibility(IsDeleteEnabled)}" IsEnabled="{x:Bind SelectedImage,Converter={StaticResource NullEnableConverter},Mode=OneWay}" Click="DeleteMenu_Click"/>
 
                 <AppBarSeparator Visibility="{x:Bind GetVisibility3(IsCopyEnabled, IsDeleteEnabled, IsDeleteEnabled)}"/>
-                <AppBarButton Label="Copy as Bitmap" x:Name="CopyAsBitmapButton" Click="CopyAsBitmapMenu_Click" Visibility="{x:Bind GetVisibility(IsCopyEnabled)}">
+                <AppBarButton x:Uid="ms-resource:///PhotoGalleryViewer/CopyAsBitmapAppBarButton" x:Name="CopyAsBitmapButton" Click="CopyAsBitmapMenu_Click" Visibility="{x:Bind GetVisibility(IsCopyEnabled)}">
                     <AppBarButton.Icon>
                         <FontIcon Glyph="&#xE91B;" />
                     </AppBarButton.Icon>
                 </AppBarButton>
-                <AppBarButton Label="Open in File Explorer" x:Name="OpenInExplorerButton" Click="OpenInExplorerMenu_Click">
+                <AppBarButton x:Uid="ms-resource:///PhotoGalleryViewer/OpenInExplorerAppBarButton" x:Name="OpenInExplorerButton" Click="OpenInExplorerMenu_Click">
                     <AppBarButton.Icon>
                         <FontIcon Glyph="&#xE8DA;" />
                     </AppBarButton.Icon>
                 </AppBarButton>
-                <AppBarButton Label="Properties" IsEnabled="{x:Bind SelectedImage,Converter={StaticResource NullEnableConverter},Mode=OneWay}" Click="PropertiesMenu_Click">
+                <AppBarButton x:Uid="ms-resource:///PhotoGalleryViewer/PropertiesAppBarButton" IsEnabled="{x:Bind SelectedImage,Converter={StaticResource NullEnableConverter},Mode=OneWay}" Click="PropertiesMenu_Click">
                     <AppBarButton.Icon>
                         <FontIcon Glyph="&#xE946;" />
                     </AppBarButton.Icon>
                 </AppBarButton>
                 <AppBarSeparator/>
-                <AppBarButton Icon="Sort" Label="Sort">
+                <AppBarButton x:Uid="ms-resource:///PhotoGalleryViewer/SortAppBarButton" Icon="Sort">
                     <AppBarButton.Flyout>
                         <MenuFlyout>
                             <MenuFlyout.SystemBackdrop>
@@ -226,18 +228,18 @@
                                 <behaviors:RadioMenuItemCheckStateBehavior Value="{x:Bind SortBy,Mode=TwoWay}" ListeningGroupName="SortMethod"/>
                                 <behaviors:RadioMenuItemCheckStateBehavior Value="{x:Bind SortOrder,Mode=TwoWay}" ListeningGroupName="SortOrder"/>
                             </interactivity:Interaction.Behaviors>
-                            <RadioMenuFlyoutItem Text="Name" GroupName="SortMethod" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Name"/>
-                            <RadioMenuFlyoutItem Text="Type" GroupName="SortMethod" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Type"/>
-                            <RadioMenuFlyoutItem Text="Date Created" GroupName="SortMethod" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="DateCreated"/>
-                            <RadioMenuFlyoutItem Text="Date Modified" GroupName="SortMethod" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="DateModified"/>
-                            <RadioMenuFlyoutItem Text="Total Size" GroupName="SortMethod" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="TotalSize"/>
+                            <RadioMenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/SortNameRadioMenuFlyoutItem" GroupName="SortMethod" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Name"/>
+                            <RadioMenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/SortTypeRadioMenuFlyoutItem" GroupName="SortMethod" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Type"/>
+                            <RadioMenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/SortDateCreatedRadioMenuFlyoutItem" GroupName="SortMethod" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="DateCreated"/>
+                            <RadioMenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/SortDateModifiedRadioMenuFlyoutItem" GroupName="SortMethod" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="DateModified"/>
+                            <RadioMenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/SortTotalSizeRadioMenuFlyoutItem" GroupName="SortMethod" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="TotalSize"/>
                             <MenuFlyoutSeparator/>
-                            <RadioMenuFlyoutItem Text="Ascending" GroupName="SortOrder" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Ascending"/>
-                            <RadioMenuFlyoutItem Text="Descending" GroupName="SortOrder" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Descending"/>
+                            <RadioMenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/SortAscendingRadioMenuFlyoutItem" GroupName="SortOrder" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Ascending"/>
+                            <RadioMenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/SortDescendingRadioMenuFlyoutItem" GroupName="SortOrder" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Descending"/>
                         </MenuFlyout>
                     </AppBarButton.Flyout>
                 </AppBarButton>
-                <AppBarButton Icon="List" Label="View">
+                <AppBarButton x:Uid="ms-resource:///PhotoGalleryViewer/ViewAppBarButton" Icon="List">
                     <AppBarButton.Flyout>
                         <MenuFlyout>
                             <MenuFlyout.SystemBackdrop>
@@ -246,13 +248,13 @@
                             <interactivity:Interaction.Behaviors>
                                 <behaviors:RadioMenuItemCheckStateBehavior Value="{x:Bind CurrentView,Mode=TwoWay}" ListeningGroupName="ViewMode"/>
                             </interactivity:Interaction.Behaviors>
-                            <RadioMenuFlyoutItem Text="Trumbull" GroupName="ViewMode" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Trumbull"/>
-                            <RadioMenuFlyoutItem Text="Details" GroupName="ViewMode" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Details"/>
-                            <RadioMenuFlyoutItem Text="Tiles" GroupName="ViewMode" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Tiles"/>
+                            <RadioMenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/ViewTrumbullRadioMenuFlyoutItem" GroupName="ViewMode" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Trumbull"/>
+                            <RadioMenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/ViewDetailsRadioMenuFlyoutItem" GroupName="ViewMode" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Details"/>
+                            <RadioMenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/ViewTilesRadioMenuFlyoutItem" GroupName="ViewMode" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Tiles"/>
                         </MenuFlyout>
                     </AppBarButton.Flyout>
                 </AppBarButton>
-                <AppBarButton Label="Select">
+                <AppBarButton x:Uid="ms-resource:///PhotoGalleryViewer/SelectAppBarButton">
                     <AppBarButton.Icon>
                         <FontIcon Glyph="&#xE762;" />
                     </AppBarButton.Icon>
@@ -261,13 +263,13 @@
                             <MenuFlyout.SystemBackdrop>
                                 <DesktopAcrylicBackdrop/>
                             </MenuFlyout.SystemBackdrop>
-                            <MenuFlyoutItem Text="Select All" x:Name="SelectAllMenu" Click="SelectAllMenu_Click"/>
-                            <MenuFlyoutItem Text="Select None" x:Name="SelectNoneMenu" Click="SelectNoneMenu_Click"/>
-                            <MenuFlyoutItem Text="Invert Selection" x:Name="InvertSelectionMenu" Click="InvertSelectionMenu_Click"/>
+                            <MenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/SelectAllMenuFlyoutItem" x:Name="SelectAllMenu" Click="SelectAllMenu_Click"/>
+                            <MenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/SelectNoneMenuFlyoutItem" x:Name="SelectNoneMenu" Click="SelectNoneMenu_Click"/>
+                            <MenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/InvertSelectionMenuFlyoutItem" x:Name="InvertSelectionMenu" Click="InvertSelectionMenu_Click"/>
                         </MenuFlyout>
                     </AppBarButton.Flyout>
                 </AppBarButton>
-                <AppBarButton x:Name="ExitSearchingButton" Label="Exit Searching" Icon="Clear" Visibility="Collapsed" Click="ExitSearchingButton_Click"/>
+                <AppBarButton x:Name="ExitSearchingButton" x:Uid="ms-resource:///PhotoGalleryViewer/ExitSearchingAppBarButton" Icon="Clear" Visibility="Collapsed" Click="ExitSearchingButton_Click"/>
             </CommandBar>
             <AutoSuggestBox MaxWidth="300" Grid.Column="1" VerticalAlignment="Center" QueryIcon="Zoom" QuerySubmitted="AutoSuggestBox_QuerySubmitted" HorizontalAlignment="Stretch" PlaceholderText="{x:Bind GetQueryPlaceHolderText(Title), Mode=OneWay}">
             </AutoSuggestBox>
@@ -295,11 +297,11 @@
                     <ColumnDefinition Width="200" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Margin="-12,0,0,0" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Left" Text="Name" Foreground="{ThemeResource TextFillColorSecondary}"/>
-                <TextBlock Grid.Column="2" Margin="5,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" Text="Type" Foreground="{ThemeResource TextFillColorSecondary}"/>
-                <TextBlock Grid.Column="3" Margin="13,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" Text="Date created" Foreground="{ThemeResource TextFillColorSecondary}"/>
-                <TextBlock Grid.Column="4" Margin="21,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" Text="Date modified" Foreground="{ThemeResource TextFillColorSecondary}"/>
-                <TextBlock Grid.Column="5" Margin="30,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" Text="Size" Foreground="{ThemeResource TextFillColorSecondary}"/>
+                <TextBlock x:Uid="ms-resource:///PhotoGalleryViewer/HeaderNameTextBlock" Grid.Column="0" Margin="-12,0,0,0" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{ThemeResource TextFillColorSecondary}"/>
+                <TextBlock x:Uid="ms-resource:///PhotoGalleryViewer/HeaderTypeTextBlock" Grid.Column="2" Margin="5,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{ThemeResource TextFillColorSecondary}"/>
+                <TextBlock x:Uid="ms-resource:///PhotoGalleryViewer/HeaderDateCreatedTextBlock" Grid.Column="3" Margin="13,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{ThemeResource TextFillColorSecondary}"/>
+                <TextBlock x:Uid="ms-resource:///PhotoGalleryViewer/HeaderDateModifiedTextBlock" Grid.Column="4" Margin="21,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{ThemeResource TextFillColorSecondary}"/>
+                <TextBlock x:Uid="ms-resource:///PhotoGalleryViewer/HeaderSizeTextBlock" Grid.Column="5" Margin="30,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{ThemeResource TextFillColorSecondary}"/>
             </Grid>
         </Grid>
         <GridView Background="{x:Bind ItemPanelBackground, TargetNullValue={ThemeResource LayerOnMicaBaseAltFillColorDefaultBrush}}"
@@ -343,21 +345,21 @@
                         <behaviors:RadioMenuItemCheckStateBehavior Value="{x:Bind SortOrder,Mode=TwoWay}" ListeningGroupName="SortOrder"/>
                         <behaviors:RadioMenuItemCheckStateBehavior Value="{x:Bind CurrentView,Mode=TwoWay}" ListeningGroupName="ViewMode"/>
                     </interactivity:Interaction.Behaviors>
-                    <MenuFlyoutItem Icon="Add" Text="Add" Click="AppBarButton_Click" Visibility="{x:Bind GetVisibility(IsAddEnabled)}"/>
-                    <MenuFlyoutSubItem Icon="Sort" Text="Sort">
-                        <RadioMenuFlyoutItem Text="Name" GroupName="SortMethod" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Name"/>
-                        <RadioMenuFlyoutItem Text="Type" GroupName="SortMethod" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Type"/>
-                        <RadioMenuFlyoutItem Text="Date Created" GroupName="SortMethod" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="DateCreated"/>
-                        <RadioMenuFlyoutItem Text="Date Modified" GroupName="SortMethod" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="DateModified"/>
-                        <RadioMenuFlyoutItem Text="Total Size" GroupName="SortMethod" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="TotalSize"/>
+                    <MenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/AddFlyoutItem" Icon="Add" Click="AppBarButton_Click" Visibility="{x:Bind GetVisibility(IsAddEnabled)}"/>
+                    <MenuFlyoutSubItem x:Uid="ms-resource:///PhotoGalleryViewer/SortFlyoutSubItem" Icon="Sort">
+                        <RadioMenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/SortNameRadioMenuFlyoutItem" GroupName="SortMethod" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Name"/>
+                        <RadioMenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/SortTypeRadioMenuFlyoutItem" GroupName="SortMethod" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Type"/>
+                        <RadioMenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/SortDateCreatedRadioMenuFlyoutItem" GroupName="SortMethod" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="DateCreated"/>
+                        <RadioMenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/SortDateModifiedRadioMenuFlyoutItem" GroupName="SortMethod" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="DateModified"/>
+                        <RadioMenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/SortTotalSizeRadioMenuFlyoutItem" GroupName="SortMethod" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="TotalSize"/>
                         <MenuFlyoutSeparator/>
-                        <RadioMenuFlyoutItem Text="Ascending" GroupName="SortOrder" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Ascending"/>
-                        <RadioMenuFlyoutItem Text="Descending" GroupName="SortOrder" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Descending"/>
+                        <RadioMenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/SortAscendingRadioMenuFlyoutItem" GroupName="SortOrder" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Ascending"/>
+                        <RadioMenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/SortDescendingRadioMenuFlyoutItem" GroupName="SortOrder" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Descending"/>
                     </MenuFlyoutSubItem>
-                    <MenuFlyoutSubItem Icon="List" Text="View">
-                        <RadioMenuFlyoutItem Text="Trumbull" GroupName="ViewMode" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Trumbull"/>
-                        <RadioMenuFlyoutItem Text="Details" GroupName="ViewMode" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Details"/>
-                        <RadioMenuFlyoutItem Text="Tiles" GroupName="ViewMode" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Tiles"/>
+                    <MenuFlyoutSubItem x:Uid="ms-resource:///PhotoGalleryViewer/ViewFlyoutSubItem" Icon="List">
+                        <RadioMenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/ViewTrumbullRadioMenuFlyoutItem" GroupName="ViewMode" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Trumbull"/>
+                        <RadioMenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/ViewDetailsRadioMenuFlyoutItem" GroupName="ViewMode" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Details"/>
+                        <RadioMenuFlyoutItem x:Uid="ms-resource:///PhotoGalleryViewer/ViewTilesRadioMenuFlyoutItem" GroupName="ViewMode" behaviors:RadioMenuItemCheckStateBehavior.CheckedValue="Tiles"/>
                     </MenuFlyoutSubItem>
                 </MenuFlyout>
             </GridView.ContextFlyout>
@@ -372,9 +374,9 @@
                     Spacing="8"
                     Orientation="Horizontal"
                     x:Name="StatusBar">
-            <TextBlock VerticalAlignment="Center" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondary}"><Run Text="{x:Bind GetCurrentItemCount(Photos,SearchResult),Mode=OneWay}"/> item(s)</TextBlock>
+            <TextBlock x:Name="ItemCountStatusTextBlock" VerticalAlignment="Center" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondary}"/>
             <AppBarSeparator Margin="0,-6"/>
-            <TextBlock VerticalAlignment="Center" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondary}"><Run Text="{x:Bind SelectedItemsCount,Mode=OneWay}"/> item(s) selected</TextBlock>
+            <TextBlock x:Name="SelectedCountStatusTextBlock" VerticalAlignment="Center" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondary}"/>
             <TextBlock VerticalAlignment="Center" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondary}" x:Name="SizeStatusBarTextBlock"/>
         </StackPanel>
     </RelativePanel>

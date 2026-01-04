@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.Windows.Globalization;
 using Microsoft.Windows.Storage;
 using System;
 using System.Collections.Generic;
@@ -38,6 +39,13 @@ public class SettingProvider : ObservableObject
                 1 => ElementTheme.Dark,
                 2 => ElementTheme.Default,
             };
+
+            ApplicationLanguages.PrimaryLanguageOverride = Instance.Language switch
+            {
+                0 => "zh-CN",
+                1 => "en-US",
+                _ => "zh-CN"
+            };
         });
     }
     private T GetSetting<T>(string key, T defaultValue = default)
@@ -62,11 +70,21 @@ public class SettingProvider : ObservableObject
             {
                 (App.Current.MainWindow.Content as Grid).RequestedTheme = value switch
                 {
-                    0 => ElementTheme.Light,
-                    1 => ElementTheme.Dark,
-                    2 => ElementTheme.Default,
+                    0 => ElementTheme.Default,
+                    1 => ElementTheme.Light,
+                    2 => ElementTheme.Dark,
                 };
             });
+            OnPropertyChanged();
+        }
+    }
+
+    public int Language
+    {
+        get => GetSetting<int>(nameof(Language), 0);
+        set
+        {
+            SetSetting(nameof(Language), value);
             OnPropertyChanged();
         }
     }

@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.WinUI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -11,6 +12,7 @@ using Microsoft.Windows.Storage.Pickers;
 using PhotoPasser.Converters;
 using PhotoPasser.Helper;
 using PhotoPasser.Service;
+using PhotoPasser.Strings;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -22,9 +24,6 @@ using Windows.Foundation.Collections;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.System;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace PhotoPasser.Controls;
 
@@ -62,11 +61,6 @@ public class RenameResolveEventArgs : EventArgs
 
 public class ItemOperationInvokedEventArgs : EventArgs
 {
-    private class EmptyItemOperationInvokedEventArgs : ItemOperationInvokedEventArgs
-    {
-
-    }
-
     public static ItemOperationInvokedEventArgs Empty = new ItemOperationInvokedEventArgs();
     public IList<PhotoInfo> OperationItems { get; set; }
 }
@@ -98,7 +92,6 @@ public class PhotoItemOperation : DependencyObject, IPhotoViewerOperation
         set { SetValue(OperationNameProperty, value); }
     }
 
-    // Using a DependencyProperty as the backing store for OperationName.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty OperationNameProperty =
         DependencyProperty.Register(nameof(OperationName), typeof(string), typeof(PhotoItemOperation), new PropertyMetadata(string.Empty));
 
@@ -109,7 +102,6 @@ public class PhotoItemOperation : DependencyObject, IPhotoViewerOperation
         set { SetValue(DescriptiveIconProperty, value); }
     }
 
-    // Using a DependencyProperty as the backing store for DescriptiveIcon.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty DescriptiveIconProperty =
         DependencyProperty.Register(nameof(DescriptiveIcon), typeof(IconElement), typeof(PhotoItemOperation), new PropertyMetadata(null));
 
@@ -123,7 +115,6 @@ public class PhotoItemOperation : DependencyObject, IPhotoViewerOperation
         set { SetValue(ShowAtCommandBarProperty, value); }
     }
 
-    // Using a DependencyProperty as the backing store for ShowAtCommandBar.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty ShowAtCommandBarProperty =
         DependencyProperty.Register(nameof(ShowAtCommandBar), typeof(bool), typeof(PhotoItemOperation), new PropertyMetadata(false));
 
@@ -134,7 +125,6 @@ public class PhotoItemOperation : DependencyObject, IPhotoViewerOperation
         set { SetValue(ShowAtRightTapMenuProperty, value); }
     }
 
-    // Using a DependencyProperty as the backing store for ShowAtRightMenu.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty ShowAtRightTapMenuProperty =
         DependencyProperty.Register(nameof(ShowAtRightTapMenu), typeof(bool), typeof(PhotoItemOperation), new PropertyMetadata(true));
 
@@ -146,12 +136,12 @@ public class PhotoItemOperation : DependencyObject, IPhotoViewerOperation
         set { SetValue(ModeProperty, value); }
     }
 
-    // Using a DependencyProperty as the backing store for Mode.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty ModeProperty =
         DependencyProperty.Register(nameof(Mode), typeof(PhotoItemOperationMode), typeof(PhotoItemOperation), new PropertyMetadata(PhotoItemOperationMode.Single));
 
-    public void Invoke(PhotoGalleryViewer viewer, ItemOperationInvokedEventArgs args) => Invoked(viewer, args);
+    public void Invoke(PhotoGalleryViewer viewer, ItemOperationInvokedEventArgs args) => Invoked?.Invoke(viewer, args);
 }
+
 public class PhotoGeneralOperation : DependencyObject, IPhotoViewerOperation
 {
     public string OperationName
@@ -160,7 +150,6 @@ public class PhotoGeneralOperation : DependencyObject, IPhotoViewerOperation
         set { SetValue(OperationNameProperty, value); }
     }
 
-    // Using a DependencyProperty as the backing store for OperationName.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty OperationNameProperty =
         DependencyProperty.Register(nameof(OperationName), typeof(string), typeof(PhotoItemOperation), new PropertyMetadata(string.Empty));
 
@@ -171,7 +160,6 @@ public class PhotoGeneralOperation : DependencyObject, IPhotoViewerOperation
         set { SetValue(DescriptiveIconProperty, value); }
     }
 
-    // Using a DependencyProperty as the backing store for DescriptiveIcon.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty DescriptiveIconProperty =
         DependencyProperty.Register(nameof(DescriptiveIcon), typeof(IconElement), typeof(PhotoItemOperation), new PropertyMetadata(null));
 
@@ -181,11 +169,8 @@ public class PhotoGeneralOperation : DependencyObject, IPhotoViewerOperation
         set { SetValue(ShowAtCommandBarProperty, value); }
     }
 
-    // Using a DependencyProperty as the backing store for ShowAtCommandBar.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty ShowAtCommandBarProperty =
         DependencyProperty.Register(nameof(ShowAtCommandBar), typeof(bool), typeof(PhotoItemOperation), new PropertyMetadata(false));
-
-
 
     public bool ShowAtRightTapMenu
     {
@@ -193,10 +178,8 @@ public class PhotoGeneralOperation : DependencyObject, IPhotoViewerOperation
         set { SetValue(ShowAtRightTapMenuProperty, value); }
     }
 
-    // Using a DependencyProperty as the backing store for ShowAtRightTapMenu.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty ShowAtRightTapMenuProperty =
         DependencyProperty.Register(nameof(ShowAtRightTapMenu), typeof(bool), typeof(PhotoGeneralOperation), new PropertyMetadata(true));
-
 
 
     public event TypedEventHandler<PhotoGalleryViewer, ItemOperationInvokedEventArgs> Invoked;
@@ -221,16 +204,16 @@ public sealed partial class PhotoGalleryViewer : UserControl
         Loaded += PhotoGalleryViewer_Loaded;
         RegisterPropertyChangedCallback(CurrentViewProperty, (obj, p) =>
         {
-            FileDetailHeaderVisibility = CurrentView == DisplayView.Details? Visibility.Visible : Visibility.Collapsed;
+            FileDetailHeaderVisibility = CurrentView == DisplayView.Details ? Visibility.Visible : Visibility.Collapsed;
         });
-        
     }
+
     private bool _initialized = false;
     private void PhotoGalleryViewer_Loaded(object sender, RoutedEventArgs e)
     {
-        if(!_initialized)
+        if (!_initialized)
         {
-            _initialized = true; 
+            _initialized = true;
             InitializeAll();
         }
     }
@@ -241,9 +224,9 @@ public sealed partial class PhotoGalleryViewer : UserControl
         bool isBegin = true;
         foreach (var operItem in ExtendedOperations)
         {
-            if(operItem is PhotoItemOperation piOper)
+            if (operItem is PhotoItemOperation piOper)
             {
-                if(operItem.ShowAtRightTapMenu)
+                if (operItem.ShowAtRightTapMenu)
                 {
                     MenuFlyoutItem operMenuItem = new MenuFlyoutItem()
                     {
@@ -264,7 +247,7 @@ public sealed partial class PhotoGalleryViewer : UserControl
                         FileRightTapOperationsFlyoutMulti.Items.Add(operMenuItem);
                     }
                 }
-                
+
 
                 if (operItem.ShowAtCommandBar)
                 {
@@ -316,6 +299,7 @@ public sealed partial class PhotoGalleryViewer : UserControl
 
             isBegin = false;
         }
+        UpdateStatusBarStrings();
     }
 
     public SortBy SortBy
@@ -324,7 +308,6 @@ public sealed partial class PhotoGalleryViewer : UserControl
         set { if (value != SortBy) SetValue(SortByProperty, value); }
     }
 
-    // Using a DependencyProperty as the backing store for SortBy.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty SortByProperty =
         DependencyProperty.Register(nameof(SortBy), typeof(SortBy), typeof(PhotoGalleryViewer), new PropertyMetadata(0));
 
@@ -334,17 +317,15 @@ public sealed partial class PhotoGalleryViewer : UserControl
         set { if (value != SortOrder) SetValue(SortOrderProperty, value); }
     }
 
-    // Using a DependencyProperty as the backing store for SortOrder.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty SortOrderProperty =
         DependencyProperty.Register(nameof(SortOrder), typeof(SortOrder), typeof(PhotoGalleryViewer), new PropertyMetadata(0));
 
     public DisplayView CurrentView
     {
         get { return (DisplayView)GetValue(CurrentViewProperty); }
-        set { if(value != CurrentView) SetValue(CurrentViewProperty, value); }
+        set { if (value != CurrentView) SetValue(CurrentViewProperty, value); }
     }
 
-    // Using a DependencyProperty as the backing store for CurrentView.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty CurrentViewProperty =
         DependencyProperty.Register(nameof(CurrentView), typeof(DisplayView), typeof(PhotoGalleryViewer), new PropertyMetadata(0));
 
@@ -354,7 +335,6 @@ public sealed partial class PhotoGalleryViewer : UserControl
         set { SetValue(SelectedImageProperty, value); }
     }
 
-    // Using a DependencyProperty as the backing store for SelectedImage.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty SelectedImageProperty =
         DependencyProperty.Register(nameof(SelectedImage), typeof(PhotoInfo), typeof(PhotoGalleryViewer), new PropertyMetadata(null));
 
@@ -366,7 +346,6 @@ public sealed partial class PhotoGalleryViewer : UserControl
         set { SetValue(SelectedPhotosProperty, value); }
     }
 
-    // Using a DependencyProperty as the backing store for SelectedPhotos.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty SelectedPhotosProperty =
         DependencyProperty.Register(nameof(SelectedPhotos), typeof(IList<PhotoInfo>), typeof(PhotoGalleryViewer), new PropertyMetadata(null));
 
@@ -378,7 +357,6 @@ public sealed partial class PhotoGalleryViewer : UserControl
         set { SetValue(PhotosProperty, value); }
     }
 
-    // Using a DependencyProperty as the backing store for Photos.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty PhotosProperty =
         DependencyProperty.Register(nameof(Photos), typeof(ObservableCollection<PhotoInfo>), typeof(PhotoGalleryViewer), new PropertyMetadata(null));
 
@@ -390,7 +368,6 @@ public sealed partial class PhotoGalleryViewer : UserControl
         set { SetValue(ItemPanelBackgroundProperty, value); }
     }
 
-    // Using a DependencyProperty as the backing store for ItemPanelBackground.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty ItemPanelBackgroundProperty =
         DependencyProperty.Register(nameof(ItemPanelBackground), typeof(Brush), typeof(PhotoGalleryViewer), new PropertyMetadata(null));
 
@@ -402,7 +379,6 @@ public sealed partial class PhotoGalleryViewer : UserControl
         set { SetValue(IsAddEnabledProperty, value); }
     }
 
-    // Using a DependencyProperty as the backing store for IsAddEnabled.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty IsAddEnabledProperty =
         DependencyProperty.Register(nameof(IsAddEnabled), typeof(bool), typeof(PhotoGalleryViewer), new PropertyMetadata(true));
 
@@ -414,7 +390,6 @@ public sealed partial class PhotoGalleryViewer : UserControl
         set { SetValue(IsCopyEnabledProperty, value); }
     }
 
-    // Using a DependencyProperty as the backing store for IsCopyEnabled.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty IsCopyEnabledProperty =
         DependencyProperty.Register(nameof(IsCopyEnabled), typeof(bool), typeof(PhotoGalleryViewer), new PropertyMetadata(true));
 
@@ -426,7 +401,6 @@ public sealed partial class PhotoGalleryViewer : UserControl
         set { SetValue(IsDeleteEnabledProperty, value); }
     }
 
-    // Using a DependencyProperty as the backing store for IsDeleteEnabled.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty IsDeleteEnabledProperty =
         DependencyProperty.Register(nameof(IsDeleteEnabled), typeof(bool), typeof(PhotoGalleryViewer), new PropertyMetadata(true));
 
@@ -436,7 +410,6 @@ public sealed partial class PhotoGalleryViewer : UserControl
         set { SetValue(IsRenameEnabledProperty, value); }
     }
 
-    // Using a DependencyProperty as the backing store for IsRenameEnabled.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty IsRenameEnabledProperty =
         DependencyProperty.Register(nameof(IsRenameEnabled), typeof(bool), typeof(PhotoGalleryViewer), new PropertyMetadata(true));
 
@@ -448,17 +421,12 @@ public sealed partial class PhotoGalleryViewer : UserControl
         set { SetValue(SelectionModeProperty, value); }
     }
 
-    // Using a DependencyProperty as the backing store for SelectionMode.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty SelectionModeProperty =
         DependencyProperty.Register(nameof(SelectionMode), typeof(ListViewSelectionMode), typeof(PhotoGalleryViewer), new PropertyMetadata(ListViewSelectionMode.Extended));
 
 
 
-    public ICollection<IPhotoViewerOperation> ExtendedOperations { get; set;  } = new List<IPhotoViewerOperation>();
-
-    //// Using a DependencyProperty as the backing store for ExtendedOperations.  This enables animation, styling, binding, etc...
-    //public static readonly DependencyProperty ExtendedOperationsProperty =
-    //    DependencyProperty.Register(nameof(ExtendedOperations), typeof(ICollection<PhotoItemOperation>), typeof(PhotoGalleryViewer), new PropertyMetadata(new List<PhotoItemOperation>()));
+    public ICollection<IPhotoViewerOperation> ExtendedOperations { get; set; } = new List<IPhotoViewerOperation>();
 
     public string Title
     {
@@ -466,7 +434,6 @@ public sealed partial class PhotoGalleryViewer : UserControl
         set { SetValue(TitleProperty, value); }
     }
 
-    // Using a DependencyProperty as the backing store for Title.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty TitleProperty =
         DependencyProperty.Register(nameof(Title), typeof(string), typeof(PhotoGalleryViewer), new PropertyMetadata(string.Empty));
 
@@ -503,7 +470,7 @@ public sealed partial class PhotoGalleryViewer : UserControl
 
     public ObservableCollection<PhotoInfo> GetSortedPhotos(ObservableCollection<PhotoInfo> origin, ObservableCollection<PhotoInfo> searchResult, SortBy sortBy, SortOrder order)
     {
-        if (!origin?.Any()??true)
+        if (!origin?.Any() ?? true)
             return origin as ObservableCollection<PhotoInfo>;
 
         var result = new ObservableCollection<PhotoInfo>();
@@ -535,10 +502,17 @@ public sealed partial class PhotoGalleryViewer : UserControl
             ? result.OrderBy(x => x.Size)
             : result.OrderByDescending(x => x.Size),
 
-            _ => origin // 可选的默认情况
+            _ => origin
         });
     }
-    public string GetQueryPlaceHolderText(string taskName) => $"Search in {taskName}";
+
+    public string GetQueryPlaceHolderText(string taskName)
+    {
+        return "SearchPlaceholderText"
+            .GetLocalized(LC.PhotoGalleryViewer)
+            .Replace(ReplaceItem.SearchingPlace, taskName);
+    }
+
     private void ResourceItemsView_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         IsMultiSelection = ResourceItemsView.SelectedItems.Count > 1;
@@ -549,36 +523,51 @@ public sealed partial class PhotoGalleryViewer : UserControl
         SizeStatusBarTextBlock.Text = GetSelectedItemTotalSize(ResourceItemsView.SelectedItems);
         SizeStatusBarTextBlock.Visibility = ResourceItemsView.SelectedItems.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         UpdateResourceOperationBarButtons();
+        UpdateStatusBarStrings();
     }
+
+    private void UpdateStatusBarStrings()
+    {
+        var totalCount = GetCurrentItemCount(Photos, SearchResult);
+        ItemCountStatusTextBlock.Text = "ItemCountText"
+            .GetLocalized(LC.PhotoGalleryViewer)
+            .Replace(ReplaceItem.CountNumber, totalCount);
+
+        SelectedCountStatusTextBlock.Text = "SelectedCountText"
+            .GetLocalized(LC.PhotoGalleryViewer)
+            .Replace(ReplaceItem.CountNumber, SelectedItemsCount.ToString());
+    }
+
     private void UpdateResourceOperationBarButtons()
     {
-        //这里假设你有 x:Name="RenameButton" 等控件名
         RenameButton.IsEnabled = !IsMultiSelection && SelectedImage != null;
         CopyAsBitmapButton.IsEnabled = !IsMultiSelection && SelectedImage != null;
         OpenInExplorerButton.IsEnabled = !IsMultiSelection && SelectedImage != null;
         _singleFileOperationButtons.ForEach(x => x.IsEnabled = (x.Tag as PhotoItemOperation).Mode is PhotoItemOperationMode mode && ((mode == PhotoItemOperationMode.Both && SelectedImage != null) || (mode == PhotoItemOperationMode.Single && !IsMultiSelection && SelectedImage != null)));
         _multiFileOperationButtons.ForEach(x => x.IsEnabled = (x.Tag as PhotoItemOperation).Mode is PhotoItemOperationMode mode && ((mode == PhotoItemOperationMode.Both && SelectedImage != null) || (mode == PhotoItemOperationMode.Multiply && IsMultiSelection && SelectedImage != null)));
     }
+
     private void FileItemPresenter_RightTapped(object sender, RightTappedRoutedEventArgs e)
     {
-        if (IsMultiSelection) { }
-            //FileRightTapOperationsFlyoutMulti.ShowAt((FrameworkElement)sender, new FlyoutShowOptions { Position = e.GetPosition((FrameworkElement)sender) });
-        else
+        if (!IsMultiSelection)
         {
-            //FileRightTapOperationsFlyout.ShowAt((FrameworkElement)sender, new FlyoutShowOptions { Position = e.GetPosition((FrameworkElement)sender) });
             RightTappedPhoto = (sender as Grid)!.DataContext as PhotoInfo;
         }
     }
+
     private PhotoInfo DecidePath(object sender, PhotoInfo rightTappedValue, PhotoInfo selectedValue)
     {
         return sender is MenuFlyoutItem ? rightTappedValue : selectedValue;
     }
 
-    // 菜单项事件绑定
     private async void RenameMenu_Click(object sender, RoutedEventArgs e)
     {
         var file = DecidePath(sender, RightTappedPhoto, SelectedImage);
-        var dialog = new TextBoxDialog("Rename File", "Enter new name:", file.UserName, false)
+
+        string title = "RenameDialogTitle".GetLocalized(LC.PhotoGalleryViewer);
+        string content = "RenameDialogContent".GetLocalized(LC.PhotoGalleryViewer);
+
+        var dialog = new TextBoxDialog(title, content, file.UserName, false)
         {
             XamlRoot = App.Current.MainWindow.Content.XamlRoot
         };
@@ -611,14 +600,14 @@ public sealed partial class PhotoGalleryViewer : UserControl
     }
     private void CopyAsPathMenu_Click(object sender, RoutedEventArgs e)
     {
-        CopyAsPathResolve?.Invoke(this, new CopyPhotoResolveEventArgs() 
+        CopyAsPathResolve?.Invoke(this, new CopyPhotoResolveEventArgs()
         {
             CopyItems = [DecidePath(sender, RightTappedPhoto, SelectedImage)]
         });
     }
     private void CopyAsBitmapMenu_Click(object sender, RoutedEventArgs e)
     {
-        CopyAsBitmapResolve.Invoke(this, new CopyPhotoResolveEventArgs()
+        CopyAsBitmapResolve?.Invoke(this, new CopyPhotoResolveEventArgs()
         {
             CopyItems = [DecidePath(sender, RightTappedPhoto, SelectedImage)]
         });
@@ -635,9 +624,9 @@ public sealed partial class PhotoGalleryViewer : UserControl
             return;
 
         var removeItems = IsMultiSelection ? ResourceItemsView.SelectedItems.Cast<PhotoInfo>().ToList() : [DecidePath(sender, RightTappedPhoto, SelectedImage)];
-        foreach(var item in removeItems)
+        foreach (var item in removeItems)
         {
-            DeleteRequested(this, new DeletePhotoRequestedEventArgs()
+            DeleteRequested?.Invoke(this, new DeletePhotoRequestedEventArgs()
             {
                 State = state,
                 DeleteItem = item
@@ -666,7 +655,6 @@ public sealed partial class PhotoGalleryViewer : UserControl
 
         e.Data.SetStorageItems(await files);
         e.Data.RequestedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Copy;
-
     }
 
     private void GridView_DragOver(object sender, DragEventArgs e)
@@ -736,7 +724,7 @@ public sealed partial class PhotoGalleryViewer : UserControl
 
     private void CopyAccelerator_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
     {
-        if(ResourceItemsView.SelectedItems.Count > 0)
+        if (ResourceItemsView.SelectedItems.Count > 0)
             CopyMenu_Click(null, null);
     }
 
@@ -751,12 +739,14 @@ public sealed partial class PhotoGalleryViewer : UserControl
         SearchResult = Photos.Where(p => p.UserName.Contains(args.QueryText, StringComparison.OrdinalIgnoreCase))
                              .AsObservable();
         ExitSearchingButton.Visibility = Visibility.Visible;
+        UpdateStatusBarStrings();
     }
 
     private void ExitSearchingButton_Click(object sender, RoutedEventArgs e)
     {
         ExitSearchingButton.Visibility = Visibility.Collapsed;
         SearchResult = new EmptyPhotoCollection();
+        UpdateStatusBarStrings();
     }
     public async Task Open(object param)
     {
@@ -777,7 +767,6 @@ public sealed partial class PhotoGalleryViewer : UserControl
 
     public async Task OpenInExplorer(object param)
     {
-        // 禁止多选
         if (param is PhotoInfo photo)
         {
             StorageFolder folder = await StorageItemProvider.GetStorageFolderFromFileParent(photo.Path);
@@ -827,27 +816,19 @@ public sealed partial class PhotoGalleryViewer : UserControl
         }
     }
 
-    public Visibility GetVisibility(bool boolean)
-    {
-        return boolean? Visibility.Visible : Visibility.Collapsed;
-    }
-    public Visibility GetVisibility2(bool boolean1, bool boolean2)
-    {
-        return boolean1 | boolean2 ? Visibility.Visible : Visibility.Collapsed;
-    }
-    public Visibility GetVisibility3(bool boolean1, bool boolean2, bool boolean3)
-    {
-        return boolean1 | boolean2 | boolean3 ? Visibility.Visible : Visibility.Collapsed;
-    }
+    public Visibility GetVisibility(bool boolean) => boolean ? Visibility.Visible : Visibility.Collapsed;
+    public Visibility GetVisibility2(bool boolean1, bool boolean2) => boolean1 | boolean2 ? Visibility.Visible : Visibility.Collapsed;
+    public Visibility GetVisibility3(bool boolean1, bool boolean2, bool boolean3) => boolean1 | boolean2 | boolean3 ? Visibility.Visible : Visibility.Collapsed;
+
     private FriendlySizeTextFormatConverter _innerSizeTextConverter = new();
     public string GetSelectedItemTotalSize(IList<object> photos)
     {
-        return _innerSizeTextConverter.Convert(photos.OfType<PhotoInfo>().Sum(p => p.Size),null,null,null) as string;
+        return _innerSizeTextConverter.Convert(photos.OfType<PhotoInfo>().Sum(p => p.Size), null, null, null) as string;
     }
     public string GetCurrentItemCount(ObservableCollection<PhotoInfo> photos, ObservableCollection<PhotoInfo> searchResults)
     {
-        if(searchResults is not EmptyPhotoCollection)
+        if (searchResults is not EmptyPhotoCollection)
             return searchResults.Count.ToString();
-        return photos?.Count.ToString()??"0";
+        return photos?.Count.ToString() ?? "0";
     }
 }

@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.WinUI;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -39,7 +40,8 @@ public partial class AddTaskDialogViewModel : ObservableObject
     public async Task BrowseDestinationPath()
     {
         FolderPicker folderPicker = new FolderPicker(App.Current.MainWindow.AppWindow.Id);
-        folderPicker.CommitButtonText = "Choose";
+        // 使用 Resource.resw 中的公共资源
+        folderPicker.CommitButtonText = "ChoosePrompt".GetLocalized();
         var folder = await folderPicker.PickSingleFolderAsync();
 
         if (folder == null)
