@@ -35,9 +35,9 @@ public class SettingProvider : ObservableObject
         {
             (App.Current.MainWindow.Content as Grid).RequestedTheme = Instance.RequestedTheme switch
             {
-                0 => ElementTheme.Light,
-                1 => ElementTheme.Dark,
-                2 => ElementTheme.Default,
+                0 => ElementTheme.Default,
+                1 => ElementTheme.Light,
+                2 => ElementTheme.Dark,
             };
 
             ApplicationLanguages.PrimaryLanguageOverride = Instance.Language switch
