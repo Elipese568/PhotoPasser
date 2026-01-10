@@ -120,17 +120,20 @@ public static class ColorHelper
 		// 将 RGB 转换为 HSL
 		var (h, s, l) = RGBToHSL(color);
 
-		if((App.Current.MainWindow.Content as Grid).RequestedTheme == Microsoft.UI.Xaml.ElementTheme.Dark)
+		// 获取当前应用的主题
+		var isDarkTheme = (App.Current.MainWindow.Content as Grid).RequestedTheme == Microsoft.UI.Xaml.ElementTheme.Dark;
+
+		if (isDarkTheme)
 		{
-			// 深色主题下的调整
-			l = Math.Max(0.0, l - 0.26);  // 降低亮度以适应深色背景
-			s = Math.Min(0.7, s + 0.2);  // 增加饱和度，避免颜色过于暗淡
+			// 映射到深色主题的亮度和饱和度
+			l = MapValue(l, 0.0, 1.0, 0.0, 0.74);  // 亮度从 [0, 1] 映射到 [0, 0.74]
+			s = MapValue(s, 0.0, 1.0, 0.2, 0.6);   // 饱和度从 [0, 1] 映射到 [0.2, 0.9]
 		}
 		else
 		{
-			// 浅色主题下的调整
-			l = Math.Min(1.0, l + 0.2);  // 提高亮度以适应浅色背景
-			s = Math.Max(0.3, s - 0.2);  // 降低饱和度，避免过于鲜艳
+			// 映射到浅色主题的亮度和饱和度
+			l = MapValue(l, 0.0, 1.0, 0.5, 0.9);  // 亮度从 [0, 1] 映射到 [0.5, 0.9]
+			s = MapValue(s, 0.0, 1.0, 0.2, 0.9);  // 饱和度从 [0, 1] 映射到 [0.2, 0.6]
 		}
 
 		// 保持色相不变，或者可以根据需求微调
@@ -138,6 +141,12 @@ public static class ColorHelper
 
 		// 将 HSL 转换回 RGB
 		return HSLToRGB(color.A, h, s, l);
+	}
+
+	// 映射函数：将原始值从一个范围映射到另一个范围
+	public static double MapValue(double value, double fromMin, double fromMax, double toMin, double toMax)
+	{
+		return toMin + (value - fromMin) * (toMax - toMin) / (fromMax - fromMin);
 	}
 
 	public static Windows.UI.Color HSLToRGB(byte a, double h, double s, double l)
