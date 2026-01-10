@@ -9,6 +9,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using PhotoPasser.Dialog;
+using PhotoPasser.Helper;
 using PhotoPasser.Service;
 using PhotoPasser.Strings;
 using System;

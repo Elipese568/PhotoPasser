@@ -37,7 +37,7 @@
                                   Width="300"
                                   CornerRadius="{StaticResource OverlayCornerRadius}">
                                 <Image Source="{x:Bind PresentPhoto,Converter={StaticResource UriImageSourceConverter}}" Stretch="UniformToFill"/>
-                                <Rectangle HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                <!--<Rectangle HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                                     <Rectangle.Fill>
                                         <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
                                             <LinearGradientBrush.GradientStops>
@@ -48,8 +48,10 @@
                                             </LinearGradientBrush.GradientStops>
                                         </LinearGradientBrush>
                                     </Rectangle.Fill>
-                                </Rectangle>
-                                <Grid HorizontalAlignment="Stretch" MaxHeight="100" VerticalAlignment="Bottom" Padding="16,0,16,16">
+                                </Rectangle>-->
+								<Rectangle HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="{x:Bind MaskBrush,Mode=OneWay}">
+								</Rectangle>
+								<Grid HorizontalAlignment="Stretch" MaxHeight="100" VerticalAlignment="Bottom" Padding="16,0,16,16">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="20" />
                                         <RowDefinition Height="*"/>

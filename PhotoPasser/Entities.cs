@@ -1,16 +1,28 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using PhotoPasser.Helper;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.UI.Xaml.Media;
+using PhotoPasser.Helper;
+using PhotoPasser.Primitive;
+using Windows.UI.ViewManagement;
 
 namespace PhotoPasser;
 
 public partial class FiltTask : ObservableObject
 {
+    public FiltTask()
+    {
+        SettingProvider.Instance.ThemeChanged += async (_, _) =>
+        {
+            MaskBrush = await GetGradientBackground(PresentPhoto);
+        };
+    }
+
     [ObservableProperty]
     private string _name;
 
@@ -27,6 +39,59 @@ public partial class FiltTask : ObservableObject
 
     [ObservableProperty]
     private string _presentPhoto;
+
+    [ObservableProperty]
+    private LinearGradientBrush _maskBrush;
+
+	private static async Task<LinearGradientBrush> GetGradientBackground(string photoPath)
+	{
+        var hind = ColorHelper.AdjustToBackground(await ColorHelper.GetAverageColor(photoPath, 0, 8));
+		var visible = ColorHelper.AdjustToBackground(await ColorHelper.GetAverageColor(photoPath, 255, 8));
+		// 创建一个新的 LinearGradientBrush
+		LinearGradientBrush gradientBrush = new LinearGradientBrush
+		{
+			StartPoint = new Windows.Foundation.Point(0, 0),
+			EndPoint = new Windows.Foundation.Point(0, 1)
+		};
+
+		// 设置渐变的停止点
+		gradientBrush.GradientStops.Add(new GradientStop
+		{
+			Color = hind,
+			Offset = 0.0
+		});
+
+		gradientBrush.GradientStops.Add(new GradientStop
+		{
+			Color = hind,
+			Offset = 0.2
+		});
+
+		// 使用主题颜色或者固定颜色作为结束渐变
+		gradientBrush.GradientStops.Add(new GradientStop
+		{
+			Color = visible,
+			Offset = 0.623
+		});
+
+		gradientBrush.GradientStops.Add(new GradientStop
+		{
+			Color = visible,
+			Offset = 1.0
+		});
+
+		// 应用这个渐变画笔到背景
+		return gradientBrush;
+	}
+
+	protected override async void OnPropertyChanged(PropertyChangedEventArgs e)
+    {
+        if(e.PropertyName == nameof(PresentPhoto))
+        {
+            MaskBrush = await GetGradientBackground(PresentPhoto);
+        }
+        base.OnPropertyChanged(e);
+    }
 }
 
 public partial class FiltResult : ObservableObject
@@ -143,6 +208,7 @@ public partial class PhotoInfo : ObservableObject
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     public DateTime DateModified { get; set; }
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
+
     public long Size { get; set; }
 
     public static async Task<PhotoInfo> Create(string filePath)

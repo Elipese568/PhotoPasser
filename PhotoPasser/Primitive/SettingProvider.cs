@@ -48,6 +48,12 @@ public class SettingProvider : ObservableObject
             };
         });
     }
+    private EventHandlerWrapper<EventHandler> _themeChanged = EventHandlerWrapper<EventHandler>.Create();
+	public event EventHandler ThemeChanged
+    {
+        add => _themeChanged.AddHandler(value);
+        remove => _themeChanged.RemoveHandler(value);
+	}
     private T GetSetting<T>(string key, T defaultValue = default)
     {
         var values = ApplicationData.GetDefault().LocalSettings.Values;
@@ -74,8 +80,10 @@ public class SettingProvider : ObservableObject
                     1 => ElementTheme.Light,
                     2 => ElementTheme.Dark,
                 };
-            });
-            OnPropertyChanged();
+				_themeChanged.Invoke(this, EventArgs.Empty);
+			});
+            
+			OnPropertyChanged();
         }
     }
 
