@@ -114,6 +114,7 @@ namespace PhotoPasser
         /// <param name="args">Details about the launch request and process.</param>
         protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
+            SettingProvider.PreApplySetting();
             _window = new MainWindow();
             SettingProvider.ApplySetting();
             _window.Closed += (s, e) =>

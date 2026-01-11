@@ -17,4 +17,5 @@ public static class LC
     public const string ProcessingPage = "ProcessingPage";
     public const string ResultView = "ResultView";
     public const string PhotoGalleryViewer = "PhotoGalleryViewer";
+    public const string MainWindow = "MainWindow";
 }

@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.Windows.Globalization;
 using Microsoft.Windows.Storage;
 using System;
 using System.Collections.Generic;
@@ -29,24 +28,29 @@ public class SettingProvider : ObservableObject
             return field;
         }
     }
+    public static void PreApplySetting()
+    {
+        Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = Instance.Language switch
+        {
+            0 => "zh-CN",
+            1 => "en-US",
+            _ => "zh-CN"
+        };
+        Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = Instance.Language switch
+        {
+            0 => "zh-CN",
+            1 => "en-US",
+            _ => "zh-CN"
+        };
+    }
     public static void ApplySetting()
     {
-        App.Current.MainWindow.DispatcherQueue.TryEnqueue(() =>
+        (App.Current.MainWindow.Content as Grid).RequestedTheme = Instance.RequestedTheme switch
         {
-            (App.Current.MainWindow.Content as Grid).RequestedTheme = Instance.RequestedTheme switch
-            {
-                0 => ElementTheme.Default,
-                1 => ElementTheme.Light,
-                2 => ElementTheme.Dark,
-            };
-
-            ApplicationLanguages.PrimaryLanguageOverride = Instance.Language switch
-            {
-                0 => "zh-CN",
-                1 => "en-US",
-                _ => "zh-CN"
-            };
-        });
+            0 => ElementTheme.Default,
+            1 => ElementTheme.Light,
+            2 => ElementTheme.Dark,
+        };
     }
     private EventHandlerWrapper<EventHandler> _themeChanged = EventHandlerWrapper<EventHandler>.Create();
 	public event EventHandler ThemeChanged

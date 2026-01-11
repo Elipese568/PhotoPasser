@@ -215,9 +215,5 @@ public sealed partial class TaskWorkspace : Page
 
     private void NavigationViewer_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
     {
-        if (args.IsSettingsSelected)
-        {
-            (sender.SelectedItem as NavigationViewItem).Tag = "Setting";
-        }
     }
 }

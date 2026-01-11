@@ -65,7 +65,7 @@
                             <Border Background="{ThemeResource LayerFillColorDefault}" CornerRadius="{ThemeResource ControlCornerRadius}">
                                 <Image Source="{x:Bind ViewModel.CurrentResult.Photos[0].Path, Converter={StaticResource UriImageSourceConverter}, Mode=OneWay}" Stretch="UniformToFill" />
                             </Border>
-                            <Border VerticalAlignment="Center" HorizontalAlignment="Right" Width="333" Height="250" Margin="-1" Grid.Row="0" Background="{StaticResource PhotoBackgroundAcrylicFillColorDefaultBrush}" CornerRadius="{ThemeResource ControlCornerRadius}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                            <Border VerticalAlignment="Center" HorizontalAlignment="Right" Width="335" Height="252" Margin="-1" Grid.Row="0" Background="{StaticResource PhotoBackgroundAcrylicFillColorDefaultBrush}" CornerRadius="{ThemeResource ControlCornerRadius}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
                                 <Image Source="{x:Bind ViewModel.CurrentResult.Photos[0].Path, Converter={StaticResource UriImageSourceConverter}, Mode=OneWay}" Stretch="Uniform" />
                             </Border>
                         </Grid>

@@ -127,4 +127,59 @@
             <TextBlock Text="{Binding UserName}" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="8" Style="{ThemeResource CaptionTextBlockStyle}"/>
         </Grid>
     </DataTemplate>
+    <Style x:Key="SettingWindowCaptionButton" TargetType="Button">
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Background" Value="{ThemeResource WindowCaptionBackground}" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="Width" Value="40" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+
+                    <Border x:Name="LayoutRoot"
+                    Background="{TemplateBinding Background}"
+                    BackgroundSizing="{TemplateBinding BackgroundSizing}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="{TemplateBinding CornerRadius}"
+                    Padding="{TemplateBinding Padding}">
+
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal">
+                                    <VisualState.Setters>
+                                        <Setter Target="LayoutRoot.Background" Value="{ThemeResource WindowCaptionButtonBackground}" />
+                                        <Setter Target="SettingIcon.Foreground" Value="{ThemeResource WindowCaptionForeground}" />
+
+                                    </VisualState.Setters>
+                                </VisualState>
+
+                                <VisualState x:Name="PointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="LayoutRoot.Background" Value="{ThemeResource WindowCaptionButtonBackgroundPointerOver}" />
+                                        <Setter Target="SettingIcon.Foreground" Value="{ThemeResource WindowCaptionForeground}" />
+
+                                    </VisualState.Setters>
+                                </VisualState>
+
+                                <VisualState x:Name="Pressed">
+                                    <VisualState.Setters>
+                                        <Setter Target="LayoutRoot.Background" Value="{ThemeResource WindowCaptionButtonBackgroundPressed}" />
+                                        <Setter Target="SettingIcon.Foreground" Value="{ThemeResource WindowCaptionForegroundDisabled}" />
+
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+
+                        </VisualStateManager.VisualStateGroups>
+
+                        <FontIcon x:Name="SettingIcon" FontSize="12" Glyph="&#xE713;" />
+                    </Border>
+
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 </ResourceDictionary>

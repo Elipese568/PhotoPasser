@@ -5,7 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:PhotoPasser"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:tk="using:CommunityToolkit.WinUI.Controls" xmlns:p="using:PhotoPasser.Primitive"
     mc:Ignorable="d"
     Title="PhotoPasser">
 
@@ -14,7 +14,7 @@
     </Window.SystemBackdrop>
     <Grid Padding="0">
         <Grid.RowDefinitions>
-            <RowDefinition Height="32"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <!--<StackPanel x:Name="TitlebarArea" 
@@ -29,8 +29,53 @@
                    HorizontalAlignment="Left" 
                    VerticalAlignment="Center">Photo Passer</TextBlock>
         </StackPanel>-->
-        <TitleBar x:Name="TitlebarArea" Grid.Row="0" Title="Photo Passer"/>
-        <Frame x:Name="contentFrame" CacheSize="4" SourcePageType="local:TaskOverview" Grid.Row="1"/>
-        
+        <TitleBar x:Name="TitlebarArea" Grid.Row="0" Title="Photo Passer" HorizontalContentAlignment="Right">
+            <TitleBar.RightHeader>
+                <Button x:Name="SettingButton" Click="SettingButton_Click" Height="48" Width="48" HorizontalAlignment="Right" Style="{StaticResource SettingWindowCaptionButton}">
+                </Button>
+            </TitleBar.RightHeader>
+            
+        </TitleBar>
+        <SplitView x:Name="ContentSplitPane" Grid.Row="1" OpenPaneLength="560" PanePlacement="Right" PaneBackground="{ThemeResource AcrylicInAppFillColorBaseBrush}">
+            <SplitView.Pane>
+                <Grid Padding="36,40" RowSpacing="36" BorderBrush="{ThemeResource DividerStrokeColorDefault}" BorderThickness="1,0,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <!-- 修改路径为 MainWindow -->
+                    <TextBlock Grid.Row="0" x:Uid="ms-resource:///MainWindow/SettingsViewTitle" Style="{ThemeResource TitleTextBlockStyle}"/>
+                    <StackPanel Grid.Row="1" Spacing="4">
+                        <tk:SettingsCard x:Uid="ms-resource:///MainWindow/AppThemeSetting">
+                            <tk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE790;" />
+                            </tk:SettingsCard.HeaderIcon>
+                            <ComboBox SelectedIndex="{x:Bind p:SettingProvider.Instance.RequestedTheme,Mode=TwoWay}">
+                                <ComboBoxItem x:Uid="ms-resource:///MainWindow/SystemThemeItem"/>
+                                <ComboBoxItem x:Uid="ms-resource:///MainWindow/LightThemeItem"/>
+                                <ComboBoxItem x:Uid="ms-resource:///MainWindow/DarkThemeItem"/>
+                            </ComboBox>
+                        </tk:SettingsCard>
+                        <tk:SettingsCard x:Uid="ms-resource:///MainWindow/LanguageSetting">
+                            <tk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE774;" />
+                            </tk:SettingsCard.HeaderIcon>
+                            <ComboBox x:Name="LanguageSelectComboBox" SelectionChanged="ComboBox_SelectionChanged" SelectedIndex="{x:Bind p:SettingProvider.Instance.Language,Mode=TwoWay}">
+                                <!-- 下面这两项通常也建议 i18n，但此处保持您原代码逻辑 -->
+                                <ComboBoxItem>简体中文</ComboBoxItem>
+                                <ComboBoxItem>English(United State)</ComboBoxItem>
+                            </ComboBox>
+                        </tk:SettingsCard>
+                        <tk:SettingsCard x:Uid="ms-resource:///MainWindow/UseAdvancedImageViewSetting">
+                            <tk:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE752;" />
+                            </tk:SettingsCard.HeaderIcon>
+                            <ToggleSwitch IsOn="{x:Bind p:SettingProvider.Instance.AdvancedImageView,Mode=TwoWay}"/>
+                        </tk:SettingsCard>
+                    </StackPanel>
+                </Grid>
+            </SplitView.Pane>
+            <Frame x:Name="contentFrame" CacheSize="4" SourcePageType="local:TaskOverview"/>
+        </SplitView>
     </Grid>
 </Window>
