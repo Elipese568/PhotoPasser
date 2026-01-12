@@ -89,6 +89,28 @@
     <data name="UseAdvancedImageViewSetting.Description" xml:space="preserve">
     <value>启用后可使用具有更多功能的高级图像视图</value>
   </data>
+	<data name="AboutExpander.Header" xml:space="preserve">
+    <value>Photo Passer</value>
+  </data>
+	<data name="AboutExpander.Description" xml:space="preserve">
+    <value>© 2026 Elipese. 保留所有权利。</value>
+  </data>
+	<data name="CloneRepoCard.Header" xml:space="preserve">
+    <value>克隆此代码仓库</value>
+  </data>
+	<data name="IssueCard.Header" xml:space="preserve">
+    <value>提交错误报告或建议</value>
+  </data>
+	<data name="OpenNewWindowToolTip" xml:space="preserve">
+    <value>在新窗口中打开</value>
+  </data>
+	<data name="DependenciesHeader.Text" xml:space="preserve">
+    <value>依赖项与引用</value>
+  </data>
+	<data name="StoreCard.Header" xml:space="preserve">
+    <value>在 Microsoft Store 中查看</value>
+  </data>
+	
   	<data name="LanguageChangedTipTitle_0" xml:space="preserve">
     <value>已更改！</value>
   </data>

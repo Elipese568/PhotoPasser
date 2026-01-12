@@ -36,7 +36,7 @@
             </TitleBar.RightHeader>
             
         </TitleBar>
-        <SplitView x:Name="ContentSplitPane" Grid.Row="1" OpenPaneLength="560" PanePlacement="Right" PaneBackground="{ThemeResource AcrylicInAppFillColorBaseBrush}">
+        <SplitView x:Name="ContentSplitPane" Grid.Row="1" OpenPaneLength="640" PanePlacement="Right" PaneBackground="{ThemeResource AcrylicInAppFillColorBaseBrush}">
             <SplitView.Pane>
                 <Grid Padding="36,40" RowSpacing="36" BorderBrush="{ThemeResource DividerStrokeColorDefault}" BorderThickness="1,0,0,0">
                     <Grid.RowDefinitions>
@@ -45,34 +45,99 @@
                     </Grid.RowDefinitions>
                     <!-- 修改路径为 MainWindow -->
                     <TextBlock Grid.Row="0" x:Uid="ms-resource:///MainWindow/SettingsViewTitle" Style="{ThemeResource TitleTextBlockStyle}"/>
-                    <StackPanel Grid.Row="1" Spacing="4">
-                        <tk:SettingsCard x:Uid="ms-resource:///MainWindow/AppThemeSetting">
-                            <tk:SettingsCard.HeaderIcon>
-                                <FontIcon Glyph="&#xE790;" />
-                            </tk:SettingsCard.HeaderIcon>
-                            <ComboBox SelectedIndex="{x:Bind p:SettingProvider.Instance.RequestedTheme,Mode=TwoWay}">
-                                <ComboBoxItem x:Uid="ms-resource:///MainWindow/SystemThemeItem"/>
-                                <ComboBoxItem x:Uid="ms-resource:///MainWindow/LightThemeItem"/>
-                                <ComboBoxItem x:Uid="ms-resource:///MainWindow/DarkThemeItem"/>
-                            </ComboBox>
-                        </tk:SettingsCard>
-                        <tk:SettingsCard x:Uid="ms-resource:///MainWindow/LanguageSetting">
-                            <tk:SettingsCard.HeaderIcon>
-                                <FontIcon Glyph="&#xE774;" />
-                            </tk:SettingsCard.HeaderIcon>
-                            <ComboBox x:Name="LanguageSelectComboBox" SelectionChanged="ComboBox_SelectionChanged" SelectedIndex="{x:Bind p:SettingProvider.Instance.Language,Mode=TwoWay}">
-                                <!-- 下面这两项通常也建议 i18n，但此处保持您原代码逻辑 -->
-                                <ComboBoxItem>简体中文</ComboBoxItem>
-                                <ComboBoxItem>English(United State)</ComboBoxItem>
-                            </ComboBox>
-                        </tk:SettingsCard>
-                        <tk:SettingsCard x:Uid="ms-resource:///MainWindow/UseAdvancedImageViewSetting">
-                            <tk:SettingsCard.HeaderIcon>
-                                <FontIcon Glyph="&#xE752;" />
-                            </tk:SettingsCard.HeaderIcon>
-                            <ToggleSwitch IsOn="{x:Bind p:SettingProvider.Instance.AdvancedImageView,Mode=TwoWay}"/>
-                        </tk:SettingsCard>
-                    </StackPanel>
+                    <ScrollView Grid.Row="1">
+                        <StackPanel Spacing="16">
+                            <StackPanel Spacing="4">
+                                <tk:SettingsCard x:Uid="ms-resource:///MainWindow/AppThemeSetting">
+                                    <tk:SettingsCard.HeaderIcon>
+                                        <FontIcon Glyph="&#xE790;" />
+                                    </tk:SettingsCard.HeaderIcon>
+                                    <ComboBox SelectedIndex="{x:Bind p:SettingProvider.Instance.RequestedTheme,Mode=TwoWay}">
+                                        <ComboBoxItem x:Uid="ms-resource:///MainWindow/SystemThemeItem"/>
+                                        <ComboBoxItem x:Uid="ms-resource:///MainWindow/LightThemeItem"/>
+                                        <ComboBoxItem x:Uid="ms-resource:///MainWindow/DarkThemeItem"/>
+                                    </ComboBox>
+                                </tk:SettingsCard>
+                                <tk:SettingsCard x:Uid="ms-resource:///MainWindow/LanguageSetting">
+                                    <tk:SettingsCard.HeaderIcon>
+                                        <FontIcon Glyph="&#xE774;" />
+                                    </tk:SettingsCard.HeaderIcon>
+                                    <ComboBox x:Name="LanguageSelectComboBox" SelectionChanged="ComboBox_SelectionChanged" SelectedIndex="{x:Bind p:SettingProvider.Instance.Language,Mode=TwoWay}">
+                                        <!-- 下面这两项通常也建议 i18n，但此处保持您原代码逻辑 -->
+                                        <ComboBoxItem>简体中文</ComboBoxItem>
+                                        <ComboBoxItem>English(United State)</ComboBoxItem>
+                                    </ComboBox>
+                                </tk:SettingsCard>
+                                <tk:SettingsCard x:Uid="ms-resource:///MainWindow/UseAdvancedImageViewSetting">
+                                    <tk:SettingsCard.HeaderIcon>
+                                        <FontIcon Glyph="&#xE752;" />
+                                    </tk:SettingsCard.HeaderIcon>
+                                    <ToggleSwitch IsOn="{x:Bind p:SettingProvider.Instance.AdvancedImageView,Mode=TwoWay}"/>
+                                </tk:SettingsCard>
+                            </StackPanel>
+                            <NavigationViewItemSeparator/>
+                            <StackPanel Spacing="4">
+                                <tk:SettingsExpander x:Uid="ms-resource:///MainWindow/AboutExpander">
+                                    <tk:SettingsExpander.HeaderIcon>
+                                        <ImageIcon Source="/Assets/StoreLogo.png" Width="24"/>
+                                    </tk:SettingsExpander.HeaderIcon>
+                                    <tk:SettingsExpander.Items>
+
+                                        <!-- 克隆仓库 -->
+                                        <tk:SettingsCard x:Uid="ms-resource:///MainWindow/CloneRepoCard">
+                                            <tk:SettingsCard.ActionIcon>
+                                                <FontIcon Glyph=""/>
+                                            </tk:SettingsCard.ActionIcon>
+                                            <TextBlock Style="{ThemeResource BodyTextBlockStyle}" 
+                                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                       IsTextSelectionEnabled="True"
+                                                       Text="{x:Bind GetProjectGitCloneCommand()}">
+                                            </TextBlock>
+                                        </tk:SettingsCard>
+
+                                        <!-- 提交问题/建议 -->
+                                        <tk:SettingsCard x:Name="IssueCard"
+                                                         x:Uid="ms-resource:///MainWindow/IssueCard"
+                                                         Click="IssueCard_Click"
+                                                         IsClickEnabled="True"
+                                                         IsActionIconVisible="True">
+                                            <tk:SettingsCard.ActionIcon>
+                                                <FontIcon Glyph="&#xE8A7;"/>
+                                            </tk:SettingsCard.ActionIcon>
+                                        </tk:SettingsCard>
+
+                                        <!-- 依赖项引用 -->
+                                        <tk:SettingsCard>
+                                            <tk:SettingsCard.Header>
+                                                <StackPanel Spacing="3">
+                                                    <TextBlock x:Uid="ms-resource:///MainWindow/DependenciesHeader" />
+                                                    <HyperlinkButton NavigateUri="https://aka.ms/windowsappsdk">Windows App SDK 1.8, Windows App Runtime</HyperlinkButton>
+                                                    <HyperlinkButton NavigateUri="https://aka.ms/winui">Windows UI Library</HyperlinkButton>
+                                                    <HyperlinkButton NavigateUri="https://aka.ms/toolkit/windows">Windows Community Toolkit</HyperlinkButton>
+                                                    <HyperlinkButton NavigateUri="https://github.com/microsoft/Win2D">Win2D</HyperlinkButton>
+                                                </StackPanel>
+                                            </tk:SettingsCard.Header>
+                                        </tk:SettingsCard>
+                                    </tk:SettingsExpander.Items>
+                                </tk:SettingsExpander>
+
+                                <!-- Microsoft Store 入口 -->
+                                <tk:SettingsCard x:Name="StoreCard"
+                                                 x:Uid="ms-resource:///MainWindow/StoreCard"
+                                                 Click="StoreCard_Click"
+                                                 IsClickEnabled="True"
+                                                 IsActionIconVisible="True">
+                                    <tk:SettingsCard.HeaderIcon>
+                                        <ImageIcon Source="/Assets/MicrosoftStoreLogo.ico"/>
+                                    </tk:SettingsCard.HeaderIcon>
+                                    <tk:SettingsCard.ActionIcon>
+                                        <FontIcon Glyph="&#xE8A7;"/>
+                                    </tk:SettingsCard.ActionIcon>
+                                </tk:SettingsCard>
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollView>
+                    
                 </Grid>
             </SplitView.Pane>
             <Frame x:Name="contentFrame" CacheSize="4" SourcePageType="local:TaskOverview"/>

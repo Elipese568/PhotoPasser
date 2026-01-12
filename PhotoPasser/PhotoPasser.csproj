@@ -15,6 +15,9 @@
 		<LangVersion>14.0</LangVersion>
 	</PropertyGroup>
 	<ItemGroup>
+	  <Content Remove="Assets\MicrosoftStoreLogo.png" />
+	</ItemGroup>
+	<ItemGroup>
 		<None Remove="Assets\LibraryItem\Empty.png" />
 		<None Remove="Assets\Mock\20250405_204636.jpg" />
 		<None Remove="Assets\Mock\20250405_210815.jpg" />
