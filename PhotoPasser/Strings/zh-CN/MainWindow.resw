@@ -69,7 +69,7 @@
     <value>选择要显示的应用主题</value>
   </data>
     <data name="SystemThemeItem.Content" xml:space="preserve">
-    <value>系统</value>
+    <value>跟随系统</value>
   </data>
     <data name="LightThemeItem.Content" xml:space="preserve">
     <value>浅色</value>

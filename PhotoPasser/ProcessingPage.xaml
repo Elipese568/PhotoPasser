@@ -108,7 +108,9 @@
                                             <Run x:Uid="ms-resource:///ProcessingPage/ExitWarningRun"/><LineBreak/>
                                             <Run x:Uid="ms-resource:///ProcessingPage/ExitConfirmRun"/>
                                         </TextBlock>
-                                        <Button x:Uid="ms-resource:///Resources/YesButton" Grid.Row="1" HorizontalAlignment="Right" Click="ExitButton_Click"/>
+                                        <Button Grid.Row="1" HorizontalAlignment="Right" Click="ExitButton_Click">
+                                            <TextBlock x:Uid="ms-resource:///ProcessingPage/HeaderExitButtonTextBlock"/>
+                                        </Button>
                                     </Grid>
                                 </Flyout>
                             </Button.Flyout>
