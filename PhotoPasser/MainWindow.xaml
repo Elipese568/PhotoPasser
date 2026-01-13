@@ -36,9 +36,9 @@
             </TitleBar.RightHeader>
             
         </TitleBar>
-        <SplitView x:Name="ContentSplitPane" Grid.Row="1" OpenPaneLength="640" PanePlacement="Right" PaneBackground="{ThemeResource AcrylicInAppFillColorBaseBrush}">
+        <SplitView x:Name="ContentSplitPane" Grid.Row="1" OpenPaneLength="640" PanePlacement="Right" PaneBackground="Transparent">
             <SplitView.Pane>
-                <Grid Padding="36,40" RowSpacing="36" BorderBrush="{ThemeResource DividerStrokeColorDefault}" BorderThickness="1,0,0,0">
+                <Grid Padding="36,40" Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}" RowSpacing="36" BorderBrush="{ThemeResource DividerStrokeColorDefault}" BorderThickness="1,1,0,1" CornerRadius="8,0,0,8">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
