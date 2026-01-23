@@ -29,12 +29,6 @@ public sealed class ImageMaskSurface : ContentControl
         MaskStops = new ObservableCollection<MaskStop>();
         MaskStops.CollectionChanged += (_, __) => UpdateMaskBrush();
 
-        // 默认 stops（和你现在的一样）
-        MaskStops.Add(new MaskStop { Offset = 0.0, Alpha = 0 });
-        MaskStops.Add(new MaskStop { Offset = 0.5, Alpha = 0 });
-        MaskStops.Add(new MaskStop { Offset = 0.8, Alpha = 255 });
-        MaskStops.Add(new MaskStop { Offset = 1.0, Alpha = 255 });
-
         SettingProvider.Instance.ThemeChanged += async (_, e) =>
         {
             await RequestMaskUpdate();
