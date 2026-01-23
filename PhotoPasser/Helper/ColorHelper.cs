@@ -35,7 +35,7 @@ public static class ColorHelper
                 return Windows.UI.Color.FromArgb((byte)alpha, (byte)cached.R, (byte)cached.G, (byte)cached.B);
 
             // 用 Uri 打开文件
-            StorageFile file = await StorageFile.GetFileFromApplicationUriAsync(bmp.UriSource);
+            StorageFile file = await StorageItemProvider.GetStorageFile(bmp.UriSource);
             using var stream = await file.OpenAsync(FileAccessMode.Read);
 
             var color = await GetAverageColor(stream, alpha, blockSize);
@@ -135,42 +135,52 @@ public static class ColorHelper
 
         return (h * 360, s, l);
     }
-    public static Windows.UI.Color AdjustToBackground(Windows.UI.Color color)
+    public static Windows.UI.Color AdjustToUiBackground(Windows.UI.Color source)
     {
-        // 将 RGB 转换为 HSL
-        var (h, s, l) = RGBToHSL(color);
+        var (h, s, l) = RGBToHSL(source);
 
-        // 获取当前应用的主题
-        var isDarkTheme = (App.Current.MainWindow.Content as Grid).RequestedTheme switch
+        bool isDarkTheme = (App.Current.MainWindow.Content as Grid).RequestedTheme switch
         {
             ElementTheme.Dark => true,
             ElementTheme.Light => false,
             _ => SystemThemeHelper.IsAppDarkMode(),
         };
 
+        // ⚠️ 关键：判断是否是“近似无色”
+        bool isNearNeutral = s < 0.08;
+
         if (isDarkTheme)
         {
-            // 映射到深色主题的亮度和饱和度
-            //l = MapValue(l, 0.0, 1.0, 0.0, 0.74);  // 亮度从 [0, 1] 映射到 [0, 0.74]
-            //s = MapValue(s, 0.0, 1.0, 0.2, 0.6);   // 饱和度从 [0, 1] 映射到 [0.2, 0.9]
             l = 0.54;
-            s = 0.36;
+
+            if (isNearNeutral)
+            {
+                s = 0.0;        // 保持中性
+                h = 0.0;        // 色相无意义，清零即可
+            }
+            else
+            {
+                s = Math.Min(s * 0.8, 0.45);
+            }
         }
         else
         {
-            // 映射到浅色主题的亮度和饱和度
-            //l = MapValue(l, 0.0, 1.0, 0.5, 0.9);  // 亮度从 [0, 1] 映射到 [0.5, 0.9]
-            //s = MapValue(s, 0.0, 1.0, 0.2, 0.9);  // 饱和度从 [0, 1] 映射到 [0.2, 0.6]
-            l = 0.86;
-            s = 0.67;
+            l = 0.82;
+
+            if (isNearNeutral)
+            {
+                s = 0.0;        // ❗直接灰阶，彻底杜绝发红
+                h = 0.0;
+            }
+            else
+            {
+                s = Math.Min(s * 0.9, 0.7);
+            }
         }
 
-        // 保持色相不变，或者可以根据需求微调
-        h = h % 360;
-
-        // 将 HSL 转换回 RGB
-        return HSLToRGB(color.A, h, s, l);
+        return HSLToRGB(source.A, h, s, l);
     }
+
 
     // 映射函数：将原始值从一个范围映射到另一个范围
     public static double MapValue(double value, double fromMin, double fromMax, double toMin, double toMax)

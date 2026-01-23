@@ -133,7 +133,7 @@ public sealed partial class TaskWorkspace : Page
     {
         if(e.SourcePageType != typeof(ProcessingPage))
         {
-            ViewModel.Dispose();
+            ViewModel?.Dispose();
             WeakReferenceMessenger.Default.Unregister<string, string>(ViewModel, "NoResultAvaliable");
             WeakReferenceMessenger.Default.Unregister<string, string>(ViewModel, "NavigateToNewResult");
             App.Current.ExitProcess -= OnExit;

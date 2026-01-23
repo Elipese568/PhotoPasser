@@ -156,7 +156,7 @@ public sealed class ImageMaskSurface : ContentControl
         if (!AutoMaskColor || BackgroundImage == null) return;
 
         var avg = await ColorHelper.GetAverageColor(BackgroundImage, 255);
-        var adjusted = ColorHelper.AdjustToBackground(avg);
+        var adjusted = ColorHelper.AdjustToUiBackground(avg);
 
         MaskColor = adjusted;
     }

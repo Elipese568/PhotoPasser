@@ -50,12 +50,21 @@ public partial class AddTaskDialogViewModel : ObservableObject
         DestinationPath = folder.Path;
     }
 }
-
+public class ValidationStateChangedEventArgs : EventArgs
+{
+    public bool IsValid { get; set; }
+    public ValidationStateChangedEventArgs(bool isValid)
+    {
+        IsValid = isValid;
+    }
+}
 /// <summary>
 /// An empty page that can be used on its own or navigated to within a Frame.
 /// </summary>
 public sealed partial class EditTaskInformationDialogPage : Page
 {
+    private bool _validationState;
+    public event EventHandler<ValidationStateChangedEventArgs> ValidationStateChanged;
     public AddTaskDialogViewModel ViewModel { get; } = new AddTaskDialogViewModel();
     private FiltTask? _originTask = null;
 
@@ -73,5 +82,15 @@ public sealed partial class EditTaskInformationDialogPage : Page
         ViewModel.IsNonCreated = false;
         _originTask = origin;
         InitializeComponent();
+    }
+
+    private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        bool _new = Path.Exists(ViewModel.DestinationPath) && !string.IsNullOrEmpty(ViewModel.TaskName);
+        if (_validationState != _new)
+        {
+            _validationState = _new;
+            ValidationStateChanged?.Invoke(this, new ValidationStateChangedEventArgs(_validationState));
+        }
     }
 }

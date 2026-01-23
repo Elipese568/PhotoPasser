@@ -69,6 +69,7 @@ public partial class TaskOverviewViewModel : ObservableRecipient
     public async Task AddTask()
     {
         var page = new EditTaskInformationDialogPage();
+        
         ContentDialog cd = new ContentDialog()
         {
             Title = "AddNewTaskTitle".GetLocalized(LC.TaskOverview),
@@ -76,9 +77,13 @@ public partial class TaskOverviewViewModel : ObservableRecipient
             PrimaryButtonText = "AddPrompt".GetLocalized(LC.General),
             CloseButtonText = "CancelPrompt".GetLocalized(LC.General),
             DefaultButton = ContentDialogButton.Primary,
+            IsPrimaryButtonEnabled = false,
             XamlRoot = App.Current.MainWindow.Content.XamlRoot,
         };
-
+        page.ValidationStateChanged += (s, e) =>
+        {
+            cd.IsPrimaryButtonEnabled = e.IsValid;
+        };
         var result = await cd.ShowAsync();
         if (result == ContentDialogResult.None)
         {

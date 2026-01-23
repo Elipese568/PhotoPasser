@@ -12,7 +12,7 @@
         <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
     </Page.Resources>
     <StackPanel Spacing="16">
-        <TextBox x:Uid="ms-resource:///EditTaskInformationDialogPage/NameTextBox" Text="{x:Bind ViewModel.TaskName,Mode=TwoWay}"/>
+        <TextBox x:Uid="ms-resource:///EditTaskInformationDialogPage/NameTextBox" Text="{x:Bind ViewModel.TaskName,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"  TextChanged="TextBox_TextChanged"/>
         <TextBox x:Uid="ms-resource:///EditTaskInformationDialogPage/DescriptionTextBox" AcceptsReturn="True" Text="{x:Bind ViewModel.Description,Mode=TwoWay}"/>
         <Grid ColumnSpacing="8">
             <Grid.ColumnDefinitions>
@@ -21,7 +21,7 @@
             </Grid.ColumnDefinitions>
             <StackPanel Orientation="Vertical" Spacing="8">
                 <TextBlock x:Uid="ms-resource:///EditTaskInformationDialogPage/DestinationPathTextBlock"/>
-                <TextBox IsEnabled="False" Grid.Column="0" Text="{x:Bind ViewModel.DestinationPath,Mode=OneWay}" />
+                <TextBox Grid.Column="0" Text="{x:Bind ViewModel.DestinationPath,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" TextChanged="TextBox_TextChanged"/>
             </StackPanel>
             <Button x:Uid="ms-resource:///EditTaskInformationDialogPage/BrowseButton" VerticalAlignment="Bottom" Grid.Column="1" Command="{x:Bind ViewModel.BrowseDestinationPathCommand}" IsEnabled="{x:Bind ViewModel.IsNonCreated}"/>
         </Grid>
