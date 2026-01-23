@@ -95,10 +95,5 @@ namespace PhotoPasser
         {
             Launcher.LaunchUriAsync(new("https://apps.microsoft.com/detail/9PNKDZPF48DB"));
         }
-
-        private void ShadowRect_Loaded(object sender, RoutedEventArgs e)
-        {
-            SettingPaneShadow.Receivers.Add(ShadowCastGrid);
-        }
     }
 }

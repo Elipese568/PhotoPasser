@@ -126,25 +126,25 @@
                         <GridView HorizontalAlignment="Center" SelectionChanged="GridView_SelectionChanged" ScrollViewer.HorizontalScrollMode="Enabled" ScrollViewer.HorizontalScrollBarVisibility="Visible" SelectedIndex="0" Grid.Row="1" ItemsSource="{x:Bind ViewModel.CurrentResult.PinnedPhotos,Mode=OneWay}">
                             <GridView.ItemTemplate>
                                 <DataTemplate x:DataType="local:PhotoInfo">
-                                    <Grid Width="150" VerticalAlignment="Stretch" CornerRadius="{StaticResource OverlayCornerRadius}">
-                                        <Image Source="{Binding Path, Converter={StaticResource UriImageSourceConverter}}"/>
-                                        <Rectangle HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                                            <Rectangle.Fill>
-                                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                                    <LinearGradientBrush.GradientStops>
-                                                        <GradientStop Color="{ThemeResource CardBackgroundFillColorSecondaryTransparent}" Offset="0.0"/>
-                                                        <GradientStop Color="{ThemeResource CardBackgroundFillColorSecondaryTransparent}" Offset="0.5"/>
-                                                        <GradientStop Color="{ThemeResource CardBackgroundFillColorSecondarySoild}" Offset="0.8"/>
-                                                        <GradientStop Color="{ThemeResource CardBackgroundFillColorSecondarySoild}" Offset="1"/>
-                                                    </LinearGradientBrush.GradientStops>
-                                                </LinearGradientBrush>
-                                            </Rectangle.Fill>
-                                        </Rectangle>
-                                        <TextBlock Text="{Binding UserName}" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="8" Style="{ThemeResource CaptionTextBlockStyle}"/>
-                                        <Button Click="UnPinButton_Click" Style="{ThemeResource SubtleButtonStyle}" Margin="0,0,0,2" HorizontalAlignment="Right" VerticalAlignment="Bottom">
-                                            <FontIcon Glyph="&#xE77A;" FontSize="12"/>
-                                        </Button>
-                                    </Grid>
+                                    <controls:ImageMaskSurface BackgroundImage="{x:Bind Path,Converter={StaticResource UriImageSourceConverter},Mode=OneWay}"
+                                                               AutoMaskColor="False"
+                                                               MaskColor="{ThemeResource CardBackgroundFillColorSecondarySoild}"
+                                                               ImageStretch="Uniform"
+                                                               Width="150">
+                                        <controls:ImageMaskSurface.MaskStops>
+                                            <controls:MaskStop Offset="0.0" Alpha="0"/>
+                                            <controls:MaskStop Offset="0.5" Alpha="0"/>
+                                            <controls:MaskStop Offset="0.8" Alpha="255"/>
+                                            <controls:MaskStop Offset="1.0" Alpha="255"/>
+                                        </controls:ImageMaskSurface.MaskStops>
+                                        <Grid CornerRadius="{StaticResource OverlayCornerRadius}">
+                                            <TextBlock Text="{Binding UserName}" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="8" Style="{ThemeResource CaptionTextBlockStyle}"/>
+                                            <Button Click="UnPinButton_Click" Style="{ThemeResource SubtleButtonStyle}" Margin="0,0,0,2" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+                                                <FontIcon Glyph="&#xE77A;" FontSize="12"/>
+                                            </Button>
+                                        </Grid>
+                                    </controls:ImageMaskSurface>
+                                    
                                 </DataTemplate>
                             </GridView.ItemTemplate>
                             <GridView.ItemsPanel>
@@ -186,7 +186,26 @@
                         </Grid.RowDefinitions>
 
                         <TextBlock Grid.Row="0" VerticalAlignment="Center" Style="{ThemeResource BodyStrongTextBlockStyle}" x:Uid="ms-resource:///ResultView/PhotosSequenceHeader"/>
-                        <GridView SelectionChanged="GridView_SelectionChanged" ItemTemplate="{StaticResource PhotoTransitionStyledItem}" ScrollViewer.HorizontalScrollMode="Enabled" ScrollViewer.HorizontalScrollBarVisibility="Visible" SelectedIndex="{x:Bind ImageViewFlipView.SelectedIndex,Mode=TwoWay}" HorizontalAlignment="Stretch" Grid.Row="1" ItemsSource="{x:Bind ViewModel.CurrentResult.Photos,Mode=OneWay}">
+                        <GridView SelectionChanged="GridView_SelectionChanged" ScrollViewer.HorizontalScrollMode="Enabled" ScrollViewer.HorizontalScrollBarVisibility="Visible" SelectedIndex="{x:Bind ImageViewFlipView.SelectedIndex,Mode=TwoWay}" HorizontalAlignment="Stretch" Grid.Row="1" ItemsSource="{x:Bind ViewModel.CurrentResult.Photos,Mode=OneWay}">
+                            <GridView.ItemTemplate>
+                                <DataTemplate x:DataType="local:PhotoInfo">
+                                    <controls:ImageMaskSurface BackgroundImage="{x:Bind Path,Converter={StaticResource UriImageSourceConverter}}"
+                                                               Width="150"
+                                                               AutoMaskColor="False"
+                                                               MaskColor="{ThemeResource CardBackgroundFillColorSecondarySoild}"
+                                                               ImageStretch="Uniform">
+                                        <controls:ImageMaskSurface.MaskStops>
+                                            <controls:MaskStop Offset="0.0" Alpha="0"/>
+                                            <controls:MaskStop Offset="0.5" Alpha="0"/>
+                                            <controls:MaskStop Offset="0.8" Alpha="255"/>
+                                            <controls:MaskStop Offset="1.0" Alpha="255"/>
+
+                                        </controls:ImageMaskSurface.MaskStops>
+                                        <TextBlock Text="{x:Bind UserName}" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="8" Style="{ThemeResource CaptionTextBlockStyle}"/>
+                                    </controls:ImageMaskSurface>
+                                </DataTemplate>
+
+                            </GridView.ItemTemplate>
                             <GridView.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <ItemsStackPanel Orientation="Horizontal"/>
@@ -203,14 +222,14 @@
             </tk:Case>
             <tk:Case Value="LibraryView">
                 <controls:PhotoGalleryViewer Photos="{x:Bind ViewModel.CurrentResult.Photos, Mode=TwoWay}"
-                                         CopyResolve="PhotoGalleryViewer_CopyResolve"
-                                         CopyAsBitmapResolve="PhotoGalleryViewer_CopyAsBitmapResolve"
-                                         CopyAsPathResolve="PhotoGalleryViewer_CopyAsPathResolve"
-                                         RenameResolve="PhotoGalleryViewer_RenameResolve"
-                                         IsDeleteEnabled="False"
-                                         IsAddEnabled="False"
-                                         ItemPanelBackground="Transparent"
-                                         Title="{x:Bind ViewModel.CurrentResult.Name, Mode=OneWay}"
+                                             CopyResolve="PhotoGalleryViewer_CopyResolve"
+                                             CopyAsBitmapResolve="PhotoGalleryViewer_CopyAsBitmapResolve"
+                                             CopyAsPathResolve="PhotoGalleryViewer_CopyAsPathResolve"
+                                             RenameResolve="PhotoGalleryViewer_RenameResolve"
+                                             IsDeleteEnabled="False"
+                                             IsAddEnabled="False"
+                                             ItemPanelBackground="Transparent"
+                                             Title="{x:Bind ViewModel.CurrentResult.Name, Mode=OneWay}"
                                          x:Name="ResultGalleryView">
                     <controls:PhotoGalleryViewer.ExtendedOperations>
                         <controls:PhotoItemOperation x:Name="PinPhoto" 

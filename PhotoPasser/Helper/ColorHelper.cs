@@ -5,9 +5,12 @@ using System.Threading.Tasks;
 using Microsoft.UI.System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using PhotoPasser.Helper;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
+using Windows.Storage.Streams;
 
 namespace PhotoPasser.Helper;
 
@@ -15,56 +18,75 @@ public static class ColorHelper
 {
     private static Dictionary<string, (int R, int G, int B)> _maps = new();
 
-    public static async Task<Windows.UI.Color> GetAverageColor(string imagePath, int alpha, int blockSize = 64)
+    public static async Task<Windows.UI.Color> GetAverageColor(
+        ImageSource imageSource,
+        int alpha,
+        int blockSize = -1)
     {
-        if(_maps.TryGetValue(imagePath, out var cachedColor))
+        if(blockSize <= 0)
         {
-            (int R, int G, int B) = cachedColor;
-            return Windows.UI.Color.FromArgb((byte)alpha, (byte)R, (byte)G, (byte)B);
+            blockSize = Environment.ProcessorCount * 4;
         }
-        // 加载图像
-        var stream = await (await StorageItemProvider.GetStorageFile(imagePath)).OpenAsync(FileAccessMode.Read);
+        if (imageSource is BitmapImage bmp && bmp.UriSource != null)
+        {
+            var key = bmp.UriSource.ToString();
+
+            if (_maps.TryGetValue(key, out var cached))
+                return Windows.UI.Color.FromArgb((byte)alpha, (byte)cached.R, (byte)cached.G, (byte)cached.B);
+
+            // 用 Uri 打开文件
+            StorageFile file = await StorageFile.GetFileFromApplicationUriAsync(bmp.UriSource);
+            using var stream = await file.OpenAsync(FileAccessMode.Read);
+
+            var color = await GetAverageColor(stream, alpha, blockSize);
+            _maps[key] = (color.R, color.G, color.B);
+            return color;
+        }
+
+        // 其它 ImageSource 无法保证能读取像素（例如 SoftwareBitmapSource）
+        // 你可以选择返回一个默认值，避免控件炸掉
+        return Windows.UI.Color.FromArgb((byte)alpha, 0, 0, 0);
+    }
+
+    public static async Task<Windows.UI.Color> GetAverageColor(
+        IRandomAccessStream stream,
+        int alpha,
+        int blockSize = 64)
+    {
         var decoder = await BitmapDecoder.CreateAsync(stream);
 
-        // 获取图像的宽高
         var pixelWidth = decoder.PixelWidth;
         var pixelHeight = decoder.PixelHeight;
 
-        // 获取像素数据
         var pixelData = await decoder.GetPixelDataAsync();
         var pixels = pixelData.DetachPixelData();
 
         long totalR = 0, totalG = 0, totalB = 0;
-        int pixelCount = pixels.Length / 4; // 每个像素有 4 字节数据（A, R, G, B）
+        int pixelCount = pixels.Length / 4;
 
-        // 计算块的数量，水平和垂直方向
         int blocksPerRow = (int)Math.Ceiling((double)pixelWidth / blockSize);
         int blocksPerColumn = (int)Math.Ceiling((double)pixelHeight / blockSize);
 
-        // 使用 Parallel.For 来并行处理每个图像块
         Parallel.For(0, blocksPerColumn, (blockY) =>
         {
             for (int blockX = 0; blockX < blocksPerRow; blockX++)
             {
-                // 计算当前块的起始位置和结束位置
                 int startX = blockX * blockSize;
                 int startY = blockY * blockSize;
 
-                // 限制块的大小不超出图像边界
                 int endX = (int)Math.Min(startX + blockSize, pixelWidth);
                 int endY = (int)Math.Min(startY + blockSize, pixelHeight);
 
                 long blockR = 0, blockG = 0, blockB = 0;
 
-                // 计算当前块内的像素颜色
                 for (int y = startY; y < endY; y++)
                 {
                     for (int x = startX; x < endX; x++)
                     {
-                        int index = (int)(y * pixelWidth + x) * 4; // 每个像素 4 字节数据（A, R, G, B）
-                        byte b = pixels[index];        // Blue
-                        byte g = pixels[index + 1];    // Green
-                        byte r = pixels[index + 2];    // Red
+                        int index = (int)(y * pixelWidth + x) * 4;
+                        byte b = pixels[index];
+                        byte g = pixels[index + 1];
+                        byte r = pixels[index + 2];
 
                         blockB += b;
                         blockG += g;
@@ -72,22 +94,19 @@ public static class ColorHelper
                     }
                 }
 
-                // 更新总计颜色，确保线程安全
                 Interlocked.Add(ref totalB, blockB);
                 Interlocked.Add(ref totalG, blockG);
                 Interlocked.Add(ref totalR, blockR);
             }
         });
 
-        // 计算平均色
         byte avgR = (byte)(totalR / pixelCount);
         byte avgG = (byte)(totalG / pixelCount);
         byte avgB = (byte)(totalB / pixelCount);
 
-        // 返回平均色
-        _maps[imagePath] = (avgR, avgG, avgB);
         return Windows.UI.Color.FromArgb((byte)alpha, avgR, avgG, avgB);
     }
+
 
     public static (double H, double S, double L) RGBToHSL(Windows.UI.Color color)
     {

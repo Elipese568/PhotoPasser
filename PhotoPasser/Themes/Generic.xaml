@@ -182,4 +182,41 @@
             </Setter.Value>
         </Setter>
     </Style>
+
+    <Style TargetType="controls:ImageMaskSurface">
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="controls:ImageMaskSurface">
+                    <Border
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}">
+
+                        <Grid>
+                            <!-- Background Image -->
+                            <Image
+                                Stretch="{TemplateBinding ImageStretch}"
+                                Source="{TemplateBinding BackgroundImage}" />
+
+                            <!-- Mask -->
+                            <Rectangle
+                                x:Name="PART_MaskRect"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch" />
+
+                            <!-- Content -->
+                            <ContentPresenter
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 </ResourceDictionary>
