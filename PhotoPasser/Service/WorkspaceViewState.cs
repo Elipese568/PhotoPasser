@@ -1,3 +1,4 @@
+using PhotoPasser.Primitive;
 using System;
 
 namespace PhotoPasser.Service;

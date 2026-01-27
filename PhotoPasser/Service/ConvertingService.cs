@@ -18,18 +18,13 @@ public class ConvertingService
         return this;
     }
 
-    public TOutput Convert<TInput,TOutput>(TInput input)
-    {
-        return (TOutput)Convert(input, typeof(TInput), typeof(TOutput));
-    }
-
-    public object Convert(object value, Type convertTo, Type convertFrom = null)
+    public object? Convert(object value, Type convertTo, Type convertFrom = null)
     {
         var key = Tuple.Create(convertFrom??value.GetType(), convertTo);
         if (_converters.TryGetValue(key, out var converter))
         {
             return converter(value);
         }
-        throw new InvalidOperationException($"No converter registered for {convertFrom} to {convertTo}");
+        return null;
     }
 }

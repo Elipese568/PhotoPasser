@@ -8,9 +8,10 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
     xmlns:conv="using:PhotoPasser.Converters" 
     xmlns:root="using:PhotoPasser" 
+    xmlns:models="using:PhotoPasser.Models"
     xmlns:helper="using:PhotoPasser.Helper" 
     xmlns:behaviors="using:PhotoPasser.Behaviors" 
-    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:interactivity="using:Microsoft.Xaml.Interactivity" xmlns:viewmodel="using:PhotoPasser.ViewModels"
     mc:Ignorable="d">
     <UserControl.Resources>
         <MenuFlyout x:Name="FileRightTapOperationsFlyout">
@@ -83,7 +84,7 @@
             </MenuFlyoutItem>
         </MenuFlyout>
 
-        <root:FileNameConverter x:Key="FileNameConverter"/>
+        <conv:UriFileNameConverter x:Key="FileNameConverter"/>
         <conv:UriImageSourceConverter x:Key="UriImageSourceConverter"/>
         <ItemsPanelTemplate x:Name="TrumbullViewPanel">
             <ItemsWrapGrid Orientation="Horizontal" HorizontalAlignment="Center"/>
@@ -102,20 +103,20 @@
         <helper:SelfReference x:Key="ControlSelf" Value="{x:Bind IsMultiSelection, Mode=TwoWay}"/>
         <conv:ViewItemTemplateConverter x:Key="ViewItemTemplateConverter">
             <conv:ViewItemTemplateConverter.TrumbullItemTemplate>
-                <DataTemplate x:DataType="root:PhotoInfo">
+                <DataTemplate x:DataType="viewmodel:PhotoInfoViewModel">
                     <Grid Padding="16" Width="120" Height="160" HorizontalAlignment="Center" VerticalAlignment="Stretch" IsRightTapEnabled="True" RightTapped="FileItemPresenter_RightTapped" IsDoubleTapEnabled="True" DoubleTapped="ResourceItem_DoubleTapped" 
                    ContextFlyout="{Binding Value,Source={StaticResource ControlSelf},Converter={StaticResource RightTapMenuFlyoutDicider}}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="40" />
                         </Grid.RowDefinitions>
-                        <Image Grid.Row="0" HorizontalAlignment="Center" Height="80" Width="80" Source="{x:Bind Path, Converter={StaticResource UriImageSourceConverter}}"/>
+                    <Image Grid.Row="0" HorizontalAlignment="Center" Height="80" Width="80" Source="{x:Bind Path, Converter={StaticResource UriImageSourceConverter}, Mode=OneWay}"/>
                         <TextBlock MaxWidth="150" MaxHeight="40" Grid.Row="1" Style="{ThemeResource BodyTextBlockStyle}" Text="{x:Bind UserName,Mode=OneWay}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                     </Grid>
                 </DataTemplate>
             </conv:ViewItemTemplateConverter.TrumbullItemTemplate>
             <conv:ViewItemTemplateConverter.TileItemTemplate>
-                <DataTemplate x:DataType="root:PhotoInfo">
+                <DataTemplate x:DataType="viewmodel:PhotoInfoViewModel">
                     <Grid Padding="8" ColumnSpacing="4" Width="250" Height="64" IsRightTapEnabled="True" IsDoubleTapEnabled="True" DoubleTapped="ResourceItem_DoubleTapped" RightTapped="FileItemPresenter_RightTapped"
                           ContextFlyout="{Binding Value,Source={StaticResource ControlSelf},Converter={StaticResource RightTapMenuFlyoutDicider}}">
                         <Grid.RowDefinitions>
@@ -127,7 +128,7 @@
                             <ColumnDefinition Width="48" />
                             <ColumnDefinition Width="1*" />
                         </Grid.ColumnDefinitions>
-                        <Image Grid.Row="0" Grid.RowSpan="3" Grid.Column="0" MaxHeight="48" MaxWidth="48" Source="{x:Bind Path, Converter={StaticResource UriImageSourceConverter}}"/>
+                        <Image Grid.Row="0" Grid.RowSpan="3" Grid.Column="0" MaxHeight="48" MaxWidth="48" Source="{x:Bind Path, Converter={StaticResource UriImageSourceConverter}, Mode=OneWay}"/>
                         <TextBlock Grid.Row="0" Grid.Column="1" Style="{ThemeResource BodyStrongTextBlockStyle}" Text="{x:Bind UserName, Mode=OneWay}"/>
                         <TextBlock Grid.Row="1" Grid.Column="1" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind Path, Converter={StaticResource FileTypeFriendlyNameConverter}}"/>
                         <TextBlock Grid.Row="2" Grid.Column="1" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind Size, Converter={StaticResource FriendlySizeTextFormatConverter}}"/>
@@ -135,7 +136,7 @@
                 </DataTemplate>
             </conv:ViewItemTemplateConverter.TileItemTemplate>
             <conv:ViewItemTemplateConverter.DetailItemTemplate>
-                <DataTemplate x:DataType="root:PhotoInfo">
+                <DataTemplate x:DataType="viewmodel:PhotoInfoViewModel">
                     <Grid Name="ResourceItem" HorizontalAlignment="Left" Padding="24,0" ColumnSpacing="8" IsDoubleTapEnabled="True" DoubleTapped="ResourceItem_DoubleTapped" IsRightTapEnabled="True" RightTapped="FileItemPresenter_RightTapped"
                    ContextFlyout="{Binding Value,Source={StaticResource ControlSelf},Converter={StaticResource RightTapMenuFlyoutDicider}}">
                         <Grid.ColumnDefinitions>

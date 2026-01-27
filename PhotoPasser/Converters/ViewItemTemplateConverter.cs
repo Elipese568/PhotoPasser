@@ -1,5 +1,6 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
+using PhotoPasser.Primitive;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,6 +21,7 @@ public class ViewItemTemplateConverter : IValueConverter
             DisplayView.Trumbull => TrumbullItemTemplate,
             DisplayView.Details => DetailItemTemplate,
             DisplayView.Tiles => TileItemTemplate,
+            _ => TrumbullItemTemplate
         };
     }
 

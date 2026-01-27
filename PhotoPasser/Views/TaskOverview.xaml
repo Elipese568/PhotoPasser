@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Page
-    x:Class="PhotoPasser.TaskOverview"
+    x:Class="PhotoPasser.Views.TaskOverview"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:PhotoPasser"
+    xmlns:models="using:PhotoPasser.Models"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:conv="using:PhotoPasser.Converters"
@@ -28,7 +28,7 @@
             </Grid.RowDefinitions>
             <GridView Name="TasksView" ItemsSource="{x:Bind ViewModel.Tasks}" Grid.Row="0" SelectionMode="None">
                 <GridView.ItemTemplate>
-                    <DataTemplate x:DataType="local:FiltTask">
+                    <DataTemplate x:DataType="models:FiltTask">
                         <UserControl x:Name="TaskItemPresenter" PointerEntered="LibraryItem_PointerEntered" PointerExited="LibraryItem_PointerExited" IsDoubleTapEnabled="True" DoubleTapped="TaskItemPresenter_DoubleTapped">
                             <c:ImageMaskSurface BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                                 BorderThickness="1"

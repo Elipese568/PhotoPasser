@@ -14,6 +14,7 @@ using Microsoft.UI.Xaml.Navigation;
 using PhotoPasser; // 添加此行以引用 TextBoxDialog
 using PhotoPasser.Dialog;
 using PhotoPasser.Helper;
+using PhotoPasser.Primitive;
 using PhotoPasser.Service;
 using PhotoPasser.Strings;
 using System;
@@ -30,21 +31,7 @@ using WinRT;
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
-namespace PhotoPasser;
-
-public class FileNameConverter : IValueConverter
-{
-
-    public object Convert(object value, Type targetType, object parameter, string language)
-    {
-        return (value as PhotoInfo).UserName;
-    }
-
-    public object ConvertBack(object value, Type targetType, object parameter, string language)
-    {
-        throw new NotImplementedException();
-    }
-}
+namespace PhotoPasser.Views;
 
 /// <summary>
 /// An empty page that can be used on its own or navigated to within a Frame.
@@ -114,6 +101,13 @@ public sealed partial class TaskWorkspace : Page
 
     private void OnExit(object? sender, EventArgs e)
     {
+        ExitInternal();
+    }
+
+    private void ExitInternal()
+    {
+        if (ViewModel == null) return;
+
         ViewModel.Dispose();
         WeakReferenceMessenger.Default.Unregister<string, string>(ViewModel, "NoResultAvaliable");
         WeakReferenceMessenger.Default.Unregister<string, string>(ViewModel, "NavigateToNewResult");
@@ -122,9 +116,9 @@ public sealed partial class TaskWorkspace : Page
     private void NavigationViewer_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
     {
         if ((string)args.InvokedItemContainer.Tag == "Home")
-            App.Current.MainWindow.Frame.GoBack();
+            App.GetService<MainWindow>()!.Frame.GoBack();
         else if ((string)args.InvokedItemContainer.Tag == "StartFiltering")
-            App.Current.MainWindow.Frame.Navigate(typeof(ProcessingPage), ViewModel.Detail.Photos);
+            App.GetService<MainWindow>()!.Frame.Navigate(typeof(ProcessingPage), ViewModel.Detail.Photos);
     }
 
     
@@ -133,9 +127,7 @@ public sealed partial class TaskWorkspace : Page
     {
         if(e.SourcePageType != typeof(ProcessingPage))
         {
-            ViewModel?.Dispose();
-            WeakReferenceMessenger.Default.Unregister<string, string>(ViewModel, "NoResultAvaliable");
-            WeakReferenceMessenger.Default.Unregister<string, string>(ViewModel, "NavigateToNewResult");
+            ExitInternal();
             App.Current.ExitProcess -= OnExit;
         }
 
@@ -175,6 +167,10 @@ public sealed partial class TaskWorkspace : Page
     private async void PhotoGalleryViewer_DeleteRequested(Controls.PhotoGalleryViewer sender, Controls.DeletePhotoRequestedEventArgs args)
     {
         await ViewModel.Delete(args.DeleteItem, (bool)args.State);
+        // remove corresponding item viewmodel
+        var vm = ViewModel.Photos.FirstOrDefault(p => p.Model == args.DeleteItem || p.Path == args.DeleteItem.Path);
+        if (vm != null)
+            ViewModel.Photos.Remove(vm);
     }
 
     private async Task<object> PhotoGalleryViewer_DeleteResolving(Controls.PhotoGalleryViewer sender, Controls.DeletePhotoResolvingEventArgs args)
@@ -187,6 +183,10 @@ public sealed partial class TaskWorkspace : Page
     private async void PhotoGalleryViewer_RenameResolve(Controls.PhotoGalleryViewer sender, Controls.RenameResolveEventArgs args)
     {
         await PhotoItemOperationUtils.Rename(args.RenameItem, args.NewName);
+        // update VM so UI reflects the change
+        var vm = ViewModel.Photos.FirstOrDefault(p => p.Model == args.RenameItem || p.Path == args.RenameItem.Path);
+        if (vm != null)
+            vm.UserName = args.NewName;
     }
 
     private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -205,7 +205,7 @@ public sealed partial class TaskWorkspace : Page
     public bool Not(bool b) => !b;
     private void FilterBasedOnSelected_Invoked(Controls.PhotoGalleryViewer sender, Controls.ItemOperationInvokedEventArgs args)
     {
-        App.Current.MainWindow.Frame.Navigate(typeof(ProcessingPage), EnumerableExtensions.AsObservable(args.OperationItems.ToList()));
+        App.GetService<MainWindow>()!.Frame.Navigate(typeof(ProcessingPage), EnumerableExtensions.AsObservable(args.OperationItems.ToList()));
     }
 
     private void SelectToPresent_Invoked(Controls.PhotoGalleryViewer sender, Controls.ItemOperationInvokedEventArgs args)

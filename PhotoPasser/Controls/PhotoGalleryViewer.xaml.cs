@@ -11,6 +11,7 @@ using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Windows.Storage.Pickers;
 using PhotoPasser.Converters;
 using PhotoPasser.Helper;
+using PhotoPasser.Primitive;
 using PhotoPasser.Service;
 using PhotoPasser.Strings;
 using System;
@@ -61,7 +62,7 @@ public class RenameResolveEventArgs : EventArgs
 
 public class ItemOperationInvokedEventArgs : EventArgs
 {
-    public static ItemOperationInvokedEventArgs Empty = new ItemOperationInvokedEventArgs();
+    public new static ItemOperationInvokedEventArgs Empty = new();
     public IList<PhotoInfo> OperationItems { get; set; }
 }
 
@@ -234,7 +235,7 @@ public sealed partial class PhotoGalleryViewer : UserControl
                         Icon = operItem.DescriptiveIcon
                     }.With(x => x.Click += (s, e) => operItem.Invoke(this, new ItemOperationInvokedEventArgs()
                     {
-                        OperationItems = IsMultiSelection && piOper.Mode is PhotoItemOperationMode.Multiply or PhotoItemOperationMode.Both ? ResourceItemsView.SelectedItems.Cast<PhotoInfo>().ToList() : [DecidePath(s, RightTappedPhoto, SelectedImage)]
+                        OperationItems = IsMultiSelection && piOper.Mode is PhotoItemOperationMode.Multiply or PhotoItemOperationMode.Both ? ResourceItemsView.SelectedItems.OfType<PhotoInfoViewModel>().Select(vm => vm.Model).ToList() : new List<PhotoInfo> { DecidePath(s, RightTappedPhoto, SelectedImage).Model }
                     }));
                     if (piOper.Mode is PhotoItemOperationMode.Single or PhotoItemOperationMode.Both)
                     {
@@ -260,7 +261,7 @@ public sealed partial class PhotoGalleryViewer : UserControl
                         Tag = operItem
                     }.With(x => x.Click += (s, e) => operItem.Invoke(this, new ItemOperationInvokedEventArgs()
                     {
-                        OperationItems = IsMultiSelection && piOper.Mode is PhotoItemOperationMode.Multiply or PhotoItemOperationMode.Both ? ResourceItemsView.SelectedItems.Cast<PhotoInfo>().ToList() : [DecidePath(s, RightTappedPhoto, SelectedImage)]
+                        OperationItems = IsMultiSelection && piOper.Mode is PhotoItemOperationMode.Multiply or PhotoItemOperationMode.Both ? ResourceItemsView.SelectedItems.OfType<PhotoInfoViewModel>().Select(vm => vm.Model).ToList() : new List<PhotoInfo> { DecidePath(s, RightTappedPhoto, SelectedImage).Model }
                     }));
 
                     if (isBegin) ResourceOperationBar.PrimaryCommands.Add(new AppBarSeparator());
@@ -279,7 +280,7 @@ public sealed partial class PhotoGalleryViewer : UserControl
                         Text = operItem.OperationName,
                         Icon = operItem.DescriptiveIcon
                     }.With(x => x.Click += (s, e) => operItem.Invoke(this, ItemOperationInvokedEventArgs.Empty));
-                    (ResourceItemsView.ContextFlyout as MenuFlyout).Items.Add(operMenuItem);
+                    (ResourceItemsView.ContextFlyout as MenuFlyout)!.Items.Add(operMenuItem);
                 }
                 if (operItem.ShowAtCommandBar)
                 {
@@ -329,36 +330,36 @@ public sealed partial class PhotoGalleryViewer : UserControl
     public static readonly DependencyProperty CurrentViewProperty =
         DependencyProperty.Register(nameof(CurrentView), typeof(DisplayView), typeof(PhotoGalleryViewer), new PropertyMetadata(0));
 
-    public PhotoInfo SelectedImage
+    public PhotoInfoViewModel SelectedImage
     {
-        get { return (PhotoInfo)GetValue(SelectedImageProperty); }
+        get { return (PhotoInfoViewModel)GetValue(SelectedImageProperty); }
         set { SetValue(SelectedImageProperty, value); }
     }
 
     public static readonly DependencyProperty SelectedImageProperty =
-        DependencyProperty.Register(nameof(SelectedImage), typeof(PhotoInfo), typeof(PhotoGalleryViewer), new PropertyMetadata(null));
+        DependencyProperty.Register(nameof(SelectedImage), typeof(PhotoInfoViewModel), typeof(PhotoGalleryViewer), new PropertyMetadata(null));
 
 
 
-    public IList<PhotoInfo> SelectedPhotos
+    public IList<PhotoInfoViewModel> SelectedPhotos
     {
-        get { return (IList<PhotoInfo>)GetValue(SelectedPhotosProperty); }
+        get { return (IList<PhotoInfoViewModel>)GetValue(SelectedPhotosProperty); }
         set { SetValue(SelectedPhotosProperty, value); }
     }
 
     public static readonly DependencyProperty SelectedPhotosProperty =
-        DependencyProperty.Register(nameof(SelectedPhotos), typeof(IList<PhotoInfo>), typeof(PhotoGalleryViewer), new PropertyMetadata(null));
+        DependencyProperty.Register(nameof(SelectedPhotos), typeof(IList<PhotoInfoViewModel>), typeof(PhotoGalleryViewer), new PropertyMetadata(null));
 
 
 
-    public ObservableCollection<PhotoInfo> Photos
+    public ObservableCollection<PhotoInfoViewModel> Photos
     {
-        get { return (ObservableCollection<PhotoInfo>)GetValue(PhotosProperty); }
+        get { return (ObservableCollection<PhotoInfoViewModel>)GetValue(PhotosProperty); }
         set { SetValue(PhotosProperty, value); }
     }
 
     public static readonly DependencyProperty PhotosProperty =
-        DependencyProperty.Register(nameof(Photos), typeof(ObservableCollection<PhotoInfo>), typeof(PhotoGalleryViewer), new PropertyMetadata(null));
+        DependencyProperty.Register(nameof(Photos), typeof(ObservableCollection<PhotoInfoViewModel>), typeof(PhotoGalleryViewer), new PropertyMetadata(null));
 
 
 
@@ -451,7 +452,8 @@ public sealed partial class PhotoGalleryViewer : UserControl
         {
             DisplayView.Trumbull => TrumbullViewPanel,
             DisplayView.Details => DetailsViewPanel,
-            DisplayView.Tiles => TilesViewPanel
+            DisplayView.Tiles => TilesViewPanel,
+            _ => TrumbullViewPanel
         };
     }
     [ObservableProperty]
@@ -461,56 +463,45 @@ public sealed partial class PhotoGalleryViewer : UserControl
     private bool _isMultiSelection = false;
 
     [ObservableProperty]
-    private ObservableCollection<PhotoInfo> _searchResult = new EmptyPhotoCollection();
+    private ObservableCollection<PhotoInfoViewModel> _searchResult = new ObservableCollection<PhotoInfoViewModel>();
 
     [ObservableProperty]
     private int _selectedItemsCount;
 
-    public PhotoInfo RightTappedPhoto { get; set; }
+    public PhotoInfoViewModel RightTappedPhoto { get; set; }
 
-    public ObservableCollection<PhotoInfo> GetSortedPhotos(ObservableCollection<PhotoInfo> origin, ObservableCollection<PhotoInfo> searchResult, SortBy sortBy, SortOrder order)
+    public ObservableCollection<PhotoInfoViewModel>? GetSortedPhotos(ObservableCollection<PhotoInfoViewModel> origin, ObservableCollection<PhotoInfoViewModel> searchResult, SortBy sortBy, SortOrder order)
     {
         if (!origin?.Any() ?? true)
-            return origin as ObservableCollection<PhotoInfo>;
+            return origin;
 
-        var result = new ObservableCollection<PhotoInfo>();
+        var result = new ObservableCollection<PhotoInfoViewModel>();
 
-        if (searchResult is not EmptyPhotoCollection)
+        if (searchResult != null && searchResult.Any())
             result = searchResult;
         else
-            result = origin as ObservableCollection<PhotoInfo>;
+            result = origin;
 
-        return new(sortBy switch
+        if (result == null) return result;
+        IEnumerable<PhotoInfoViewModel>? ordered = result;
+
+        ordered = sortBy switch
         {
-            SortBy.Name => order == SortOrder.Ascending
-            ? result.OrderBy(x => x.UserName)
-            : result.OrderByDescending(x => x.UserName),
-
-            SortBy.Type => order == SortOrder.Ascending
-            ? result.OrderBy(x => x.UserName.Split(".")[^1])
-            : result.OrderByDescending(x => x.UserName.Split(".")[^1]),
-
-            SortBy.DateCreated => order == SortOrder.Ascending
-            ? result.OrderBy(x => x.DateCreated)
-            : result.OrderByDescending(x => x.DateCreated),
-
-            SortBy.DateModified => order == SortOrder.Ascending
-            ? result.OrderBy(x => x.DateModified)
-            : result.OrderByDescending(x => x.DateModified),
-
-            SortBy.TotalSize => order == SortOrder.Ascending
-            ? result.OrderBy(x => x.Size)
-            : result.OrderByDescending(x => x.Size),
-
-            _ => origin
-        });
+            SortBy.Name => order == SortOrder.Ascending ? result.OrderBy(x => x.UserName) : result.OrderByDescending(x => x.UserName),
+            SortBy.Type => order == SortOrder.Ascending ? result.OrderBy(x => x.UserName.Split('.')[^1]) : result.OrderByDescending(x => x.UserName.Split('.')[^1]),
+            SortBy.DateCreated => order == SortOrder.Ascending ? result.OrderBy(x => x.DateCreated) : result.OrderByDescending(x => x.DateCreated),
+            SortBy.DateModified => order == SortOrder.Ascending ? result.OrderBy(x => x.DateModified) : result.OrderByDescending(x => x.DateModified),
+            SortBy.TotalSize => order == SortOrder.Ascending ? result.OrderBy(x => x.Size) : result.OrderByDescending(x => x.Size),
+            _ => result,
+        };
+        return new ObservableCollection<PhotoInfoViewModel>(ordered);
     }
 
     public string GetQueryPlaceHolderText(string taskName)
     {
         return "SearchPlaceholderText"
             .GetLocalized(LC.PhotoGalleryViewer)
-            .Replace(ReplaceItem.SearchingPlace, taskName);
+            !.Replace(ReplaceItem.SearchingPlace, taskName);
     }
 
     private void ResourceItemsView_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -518,7 +509,19 @@ public sealed partial class PhotoGalleryViewer : UserControl
         IsMultiSelection = ResourceItemsView.SelectedItems.Count > 1;
         SelectedItemsCount = ResourceItemsView.SelectedItems.Count;
 
-        SelectedPhotos = ResourceItemsView.SelectedItems.OfType<PhotoInfo>().ToList();
+        SelectedPhotos = ResourceItemsView.SelectedItems.OfType<PhotoInfoViewModel>().ToList();
+
+        // force bindings update for items which may have changed properties
+        foreach (var item in ResourceItemsView.SelectedItems)
+        {
+            if (item is DependencyObject dobj)
+            {
+                // refresh container bindings
+                var container = ResourceItemsView.ContainerFromItem(item) as FrameworkElement;
+                container?.InvalidateMeasure();
+                container?.InvalidateArrange();
+            }
+        }
 
         SizeStatusBarTextBlock.Text = GetSelectedItemTotalSize(ResourceItemsView.SelectedItems);
         SizeStatusBarTextBlock.Visibility = ResourceItemsView.SelectedItems.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
@@ -530,11 +533,11 @@ public sealed partial class PhotoGalleryViewer : UserControl
     {
         var totalCount = GetCurrentItemCount(Photos, SearchResult);
         ItemCountStatusTextBlock.Text = "ItemCountText"
-            .GetLocalized(LC.PhotoGalleryViewer)
+            .GetLocalized(LC.PhotoGalleryViewer)!
             .Replace(ReplaceItem.CountNumber, totalCount);
 
         SelectedCountStatusTextBlock.Text = "SelectedCountText"
-            .GetLocalized(LC.PhotoGalleryViewer)
+            .GetLocalized(LC.PhotoGalleryViewer)!
             .Replace(ReplaceItem.CountNumber, SelectedItemsCount.ToString());
     }
 
@@ -543,19 +546,19 @@ public sealed partial class PhotoGalleryViewer : UserControl
         RenameButton.IsEnabled = !IsMultiSelection && SelectedImage != null;
         CopyAsBitmapButton.IsEnabled = !IsMultiSelection && SelectedImage != null;
         OpenInExplorerButton.IsEnabled = !IsMultiSelection && SelectedImage != null;
-        _singleFileOperationButtons.ForEach(x => x.IsEnabled = (x.Tag as PhotoItemOperation).Mode is PhotoItemOperationMode mode && ((mode == PhotoItemOperationMode.Both && SelectedImage != null) || (mode == PhotoItemOperationMode.Single && !IsMultiSelection && SelectedImage != null)));
-        _multiFileOperationButtons.ForEach(x => x.IsEnabled = (x.Tag as PhotoItemOperation).Mode is PhotoItemOperationMode mode && ((mode == PhotoItemOperationMode.Both && SelectedImage != null) || (mode == PhotoItemOperationMode.Multiply && IsMultiSelection && SelectedImage != null)));
+        _singleFileOperationButtons.ForEach(x => x.IsEnabled = (x.Tag as PhotoItemOperation)!.Mode is PhotoItemOperationMode mode && ((mode == PhotoItemOperationMode.Both && SelectedImage != null) || (mode == PhotoItemOperationMode.Single && !IsMultiSelection && SelectedImage != null)));
+        _multiFileOperationButtons.ForEach(x => x.IsEnabled = (x.Tag as PhotoItemOperation)!.Mode is PhotoItemOperationMode mode && ((mode == PhotoItemOperationMode.Both && SelectedImage != null) || (mode == PhotoItemOperationMode.Multiply && IsMultiSelection && SelectedImage != null)));
     }
 
     private void FileItemPresenter_RightTapped(object sender, RightTappedRoutedEventArgs e)
     {
         if (!IsMultiSelection)
         {
-            RightTappedPhoto = (sender as Grid)!.DataContext as PhotoInfo;
+            RightTappedPhoto = (sender as Grid)!.DataContext as PhotoInfoViewModel;
         }
     }
 
-    private PhotoInfo DecidePath(object sender, PhotoInfo rightTappedValue, PhotoInfo selectedValue)
+    private PhotoInfoViewModel DecidePath(object sender, PhotoInfoViewModel rightTappedValue, PhotoInfoViewModel selectedValue)
     {
         return sender is MenuFlyoutItem ? rightTappedValue : selectedValue;
     }
@@ -564,12 +567,12 @@ public sealed partial class PhotoGalleryViewer : UserControl
     {
         var file = DecidePath(sender, RightTappedPhoto, SelectedImage);
 
-        string title = "RenameDialogTitle".GetLocalized(LC.PhotoGalleryViewer);
-        string content = "RenameDialogContent".GetLocalized(LC.PhotoGalleryViewer);
+        string title = "RenameDialogTitle".GetLocalized(LC.PhotoGalleryViewer)!;
+        string content = "RenameDialogContent".GetLocalized(LC.PhotoGalleryViewer)!;
 
         var dialog = new TextBoxDialog(title, content, file.UserName, false)
         {
-            XamlRoot = App.Current.MainWindow.Content.XamlRoot
+            XamlRoot = App.GetService<MainWindow>()!.Content.XamlRoot
         };
         if (await dialog.ShowAsync() == ContentDialogResult.Primary)
         {
@@ -578,8 +581,8 @@ public sealed partial class PhotoGalleryViewer : UserControl
             {
                 OldName = file.UserName,
                 NewName = newName,
-                OriginalSource = Photos,
-                RenameItem = file
+                OriginalSource = Photos.Select(vm => vm.Model).ToList(),
+                RenameItem = file.Model
             });
         }
     }
@@ -595,21 +598,21 @@ public sealed partial class PhotoGalleryViewer : UserControl
     {
         CopyResolve?.Invoke(this, new CopyPhotoResolveEventArgs()
         {
-            CopyItems = IsMultiSelection ? ResourceItemsView.SelectedItems.Cast<PhotoInfo>().ToList() : [DecidePath(sender, RightTappedPhoto, SelectedImage)]
+            CopyItems = IsMultiSelection ? ResourceItemsView.SelectedItems.OfType<PhotoInfoViewModel>().Select(vm => vm.Model).ToList() : new List<PhotoInfo> { DecidePath(sender, RightTappedPhoto, SelectedImage).Model }
         });
     }
     private void CopyAsPathMenu_Click(object sender, RoutedEventArgs e)
     {
         CopyAsPathResolve?.Invoke(this, new CopyPhotoResolveEventArgs()
         {
-            CopyItems = [DecidePath(sender, RightTappedPhoto, SelectedImage)]
+            CopyItems = new List<PhotoInfo> { DecidePath(sender, RightTappedPhoto, SelectedImage).Model }
         });
     }
     private void CopyAsBitmapMenu_Click(object sender, RoutedEventArgs e)
     {
         CopyAsBitmapResolve?.Invoke(this, new CopyPhotoResolveEventArgs()
         {
-            CopyItems = [DecidePath(sender, RightTappedPhoto, SelectedImage)]
+            CopyItems = new List<PhotoInfo> { DecidePath(sender, RightTappedPhoto, SelectedImage).Model }
         });
     }
     private async void DeleteMenu_Click(object sender, RoutedEventArgs e)
@@ -623,7 +626,7 @@ public sealed partial class PhotoGalleryViewer : UserControl
         if (args.Cancel)
             return;
 
-        var removeItems = IsMultiSelection ? ResourceItemsView.SelectedItems.Cast<PhotoInfo>().ToList() : [DecidePath(sender, RightTappedPhoto, SelectedImage)];
+        var removeItems = IsMultiSelection ? ResourceItemsView.SelectedItems.OfType<PhotoInfoViewModel>().Select(vm => vm.Model).ToList() : new List<PhotoInfo> { DecidePath(sender, RightTappedPhoto, SelectedImage).Model };
         foreach (var item in removeItems)
         {
             DeleteRequested?.Invoke(this, new DeletePhotoRequestedEventArgs()
@@ -637,12 +640,12 @@ public sealed partial class PhotoGalleryViewer : UserControl
     {
         if (IsMultiSelection)
         {
-            var selected = ResourceItemsView.SelectedItems.Cast<PhotoInfo>().ToList();
+            var selected = ResourceItemsView.SelectedItems.OfType<PhotoInfoViewModel>().Select(vm => vm.Model).ToList();
             await ShowProperties(selected);
         }
         else
         {
-            await ShowProperties(DecidePath(sender, RightTappedPhoto, SelectedImage));
+            await ShowProperties(DecidePath(sender, RightTappedPhoto, SelectedImage).Model);
         }
     }
 
@@ -678,7 +681,7 @@ public sealed partial class PhotoGalleryViewer : UserControl
     private void GridView_PointerPressed(object sender, PointerRoutedEventArgs e)
     {
         if (!e.GetCurrentPoint(sender as UIElement).Properties.IsRightButtonPressed)
-            (sender as GridView).SelectedIndex = -1;
+            (sender as GridView)!.SelectedIndex = -1;
     }
 
     private void SelectAllMenu_Click(object sender, RoutedEventArgs e)
@@ -693,16 +696,16 @@ public sealed partial class PhotoGalleryViewer : UserControl
 
     private void InvertSelectionMenu_Click(object sender, RoutedEventArgs e)
     {
-        var selectedItems = ResourceItemsView.SelectedItems.Cast<PhotoInfo>().ToList();
-        foreach (var items in Photos)
+        var selectedItems = ResourceItemsView.SelectedItems.OfType<PhotoInfoViewModel>().ToList();
+        foreach (var itemVm in Photos)
         {
-            if (selectedItems.Contains(items))
+            if (selectedItems.Contains(itemVm))
             {
-                ResourceItemsView.SelectedItems.Remove(items);
+                ResourceItemsView.SelectedItems.Remove(itemVm);
             }
             else
             {
-                ResourceItemsView.SelectedItems.Add(items);
+                ResourceItemsView.SelectedItems.Add(itemVm);
             }
         }
     }
@@ -750,7 +753,7 @@ public sealed partial class PhotoGalleryViewer : UserControl
     }
     public async Task Open(object param)
     {
-        if (param is IEnumerable<PhotoInfo> photos)
+        if (param is IEnumerable<PhotoInfoViewModel> photos)
         {
             foreach (var photo in photos)
             {
@@ -758,7 +761,7 @@ public sealed partial class PhotoGalleryViewer : UserControl
                 await Launcher.LaunchFileAsync(file);
             }
         }
-        else if (param is PhotoInfo photo)
+        else if (param is PhotoInfoViewModel photo)
         {
             var file = await StorageItemProvider.GetStorageFile(photo.Path);
             await Launcher.LaunchFileAsync(file);
@@ -767,7 +770,7 @@ public sealed partial class PhotoGalleryViewer : UserControl
 
     public async Task OpenInExplorer(object param)
     {
-        if (param is PhotoInfo photo)
+        if (param is PhotoInfoViewModel photo)
         {
             StorageFolder folder = await StorageItemProvider.GetStorageFolderFromFileParent(photo.Path);
             await Launcher.LaunchFolderAsync(folder);
@@ -776,20 +779,20 @@ public sealed partial class PhotoGalleryViewer : UserControl
 
     public async Task ShowProperties(object param)
     {
-        if (param is IEnumerable<PhotoInfo> photos)
+        if (param is IEnumerable<PhotoInfoViewModel> photos)
         {
             var paths = await photos.Select(p => StorageItemProvider.GetRawFilePath(p.Path)).EvalResults().ToListAsync();
             ShellInterop.ShowFileProperties(paths.ToArray());
         }
-        else if (param is PhotoInfo photo)
+        else if (param is PhotoInfoViewModel photo)
         {
-            ShellInterop.ShowFileProperties(await StorageItemProvider.GetRawFilePath(photo.Path), WinRT.Interop.WindowNative.GetWindowHandle(App.Current.MainWindow));
+            ShellInterop.ShowFileProperties(await StorageItemProvider.GetRawFilePath(photo.Path), WinRT.Interop.WindowNative.GetWindowHandle(App.GetService<MainWindow>()!));
         }
     }
 
     public async Task Add()
     {
-        FileOpenPicker picker = new FileOpenPicker(App.Current.MainWindow.AppWindow.Id);
+        FileOpenPicker picker = new FileOpenPicker(App.GetService<MainWindow>()!.AppWindow.Id);
         picker.FileTypeFilter.Add("*");
         var files = await picker.PickMultipleFilesAsync();
         if (files != null && files.Count > 0)
@@ -823,9 +826,16 @@ public sealed partial class PhotoGalleryViewer : UserControl
     private FriendlySizeTextFormatConverter _innerSizeTextConverter = new();
     public string GetSelectedItemTotalSize(IList<object> photos)
     {
-        return _innerSizeTextConverter.Convert(photos.OfType<PhotoInfo>().Sum(p => p.Size), null, null, null) as string;
+        // support both PhotoInfo (models) and PhotoInfoViewModel in selection
+        long total = 0;
+        if (photos != null)
+        {
+            total += photos.OfType<PhotoInfo>().Sum(p => p.Size);
+            total += photos.OfType<PhotoInfoViewModel>().Sum(vm => vm.Size);
+        }
+        return _innerSizeTextConverter.Convert(total, null, null, null) as string;
     }
-    public string GetCurrentItemCount(ObservableCollection<PhotoInfo> photos, ObservableCollection<PhotoInfo> searchResults)
+    public string GetCurrentItemCount(ObservableCollection<PhotoInfoViewModel> photos, ObservableCollection<PhotoInfoViewModel> searchResults)
     {
         if (searchResults is not EmptyPhotoCollection)
             return searchResults.Count.ToString();

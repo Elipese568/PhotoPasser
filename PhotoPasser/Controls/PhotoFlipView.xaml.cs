@@ -23,29 +23,27 @@ namespace PhotoPasser.Controls;
 [ObservableObject]
 public sealed partial class PhotoFlipView : UserControl
 {
-
-
-    public ObservableCollection<PhotoInfo> Photos
+    public ObservableCollection<PhotoInfoViewModel> Photos
     {
-        get { return (ObservableCollection<PhotoInfo>)GetValue(PhotosProperty); }
+        get { return (ObservableCollection<PhotoInfoViewModel>)GetValue(PhotosProperty); }
         set { SetValue(PhotosProperty, value); OnPropertyChanged(); }
     }
 
     // Using a DependencyProperty as the backing store for Photos.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty PhotosProperty =
-        DependencyProperty.Register(nameof(Photos), typeof(ObservableCollection<PhotoInfo>), typeof(PhotoFlipView), new PropertyMetadata(null));
+        DependencyProperty.Register(nameof(Photos), typeof(ObservableCollection<PhotoInfoViewModel>), typeof(PhotoFlipView), new PropertyMetadata(null));
 
 
 
-    public PhotoInfo SelectedImage
+    public PhotoInfoViewModel SelectedImage
     {
-        get { return (PhotoInfo)GetValue(SelectedImageProperty); }
+        get { return (PhotoInfoViewModel)GetValue(SelectedImageProperty); }
         set { SetValue(SelectedImageProperty, value); OnPropertyChanged(); }
     }
 
     // Using a DependencyProperty as the backing store for SelectedImage.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty SelectedImageProperty =
-        DependencyProperty.Register(nameof(SelectedImage), typeof(PhotoInfo), typeof(PhotoFlipView), new PropertyMetadata(null));
+        DependencyProperty.Register(nameof(SelectedImage), typeof(PhotoInfoViewModel), typeof(PhotoFlipView), new PropertyMetadata(null));
 
 
 
@@ -103,8 +101,8 @@ public sealed partial class PhotoFlipView : UserControl
     {
         if(e.AddedItems.Count == 0) return;
 
-        SelectedImage = e.AddedItems[0] as PhotoInfo;
-        SelectedIndex = (sender as FlipView).SelectedIndex;
+        SelectedImage = (e.AddedItems[0] as PhotoInfoViewModel)!;
+        SelectedIndex = (sender as FlipView)!.SelectedIndex;
     }
 
     private void UserControl_PointerEntered(object sender, PointerRoutedEventArgs e)

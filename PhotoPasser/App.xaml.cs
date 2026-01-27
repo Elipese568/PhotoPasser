@@ -1,5 +1,4 @@
 ﻿#define MOCKING
-//#define DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPTION
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -22,6 +21,7 @@ using Microsoft.UI.Xaml.Shapes;
 using PhotoPasser.Primitive;
 using PhotoPasser.Service;
 using PhotoPasser.Service.Primitive;
+using PhotoPasser.Views;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
@@ -73,6 +73,7 @@ namespace PhotoPasser
                             services.AddTransient<IClipboardService, ClipboardService>();
                             services.AddSingleton<TaskOverview>()
                                     .AddSingleton<TaskOverviewViewModel>();
+                            services.AddSingleton<MainWindow>();
                         })
                         .Build();
 
@@ -115,7 +116,7 @@ namespace PhotoPasser
         protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             SettingProvider.PreApplySetting();
-            _window = new MainWindow();
+            _window = GetService<MainWindow>()!;
             SettingProvider.ApplySetting();
             _window.Closed += (s, e) =>
             {

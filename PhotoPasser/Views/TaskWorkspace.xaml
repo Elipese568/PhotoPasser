@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Page
-    x:Class="PhotoPasser.TaskWorkspace"
+    x:Class="PhotoPasser.Views.TaskWorkspace"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:PhotoPasser"
+    xmlns:local="using:PhotoPasser.Models"
+    xmlns:viewmodels="using:PhotoPasser.ViewModels"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tk="using:CommunityToolkit.WinUI.Controls"
@@ -92,7 +93,7 @@
                             BorderBrush="{ThemeResource DividerStrokeColorDefault}"
                             BorderThickness="0,1,0,0"
                             Grid.Row="1"/>
-                    <controls:PhotoGalleryViewer Photos="{x:Bind ViewModel.Detail.Photos, Mode=TwoWay}"
+                    <controls:PhotoGalleryViewer Photos="{x:Bind ViewModel.Photos, Mode=TwoWay}"
                                                  CurrentView="{x:Bind ViewModel.CurrentView, Mode=TwoWay}"
                                                  SortBy="{x:Bind ViewModel.SortBy, Mode=TwoWay}"
                                                  SortOrder="{x:Bind ViewModel.SortOrder}"

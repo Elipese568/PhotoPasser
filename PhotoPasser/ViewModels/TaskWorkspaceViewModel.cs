@@ -21,35 +21,10 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.System;
+using PhotoPasser.Models;
+using PhotoPasser.Primitive;
 
-namespace PhotoPasser;
-
-public enum DisplayView
-{
-    Trumbull,
-    Details,
-    Tiles
-}
-
-public enum SortOrder
-{
-    Ascending,
-    Descending
-}
-
-public enum SortBy
-{
-    Name,
-    Type,
-    DateCreated,
-    DateModified,
-    TotalSize
-}
-
-public class EmptyPhotoCollection : ObservableCollection<PhotoInfo>
-{
-
-}
+namespace PhotoPasser.ViewModels;
 
 
 public partial class TaskWorkspaceViewModel : ObservableRecipient, IDisposable
@@ -69,33 +44,42 @@ public partial class TaskWorkspaceViewModel : ObservableRecipient, IDisposable
 
     public SortBy SortBy
     {
-        get => _workspaceStateCache?.SortBy ?? default;
+        get => (SortBy)(_workspaceStateCache?.SortBy ?? default);
         set
         {
-            if (_workspaceStateCache.SortBy == value) return;
+            if ((SortBy)_workspaceStateCache.SortBy == value) return;
 
-            _workspaceStateCache.SortBy = value;
+            _workspaceStateCache.SortBy = (PhotoPasser.Primitive.SortBy)value;
             DebouncedSaveWorkspaceState();
         }
-    }
+        }
 
+    private ObservableCollection<PhotoInfoViewModel> _photos;
+    public ObservableCollection<PhotoInfoViewModel> Photos
+    {
+        get => _photos; 
+        set
+        {
+            if (_photos == value) return;
+            _photos = value;
+            OnPropertyChanged(nameof(Photos));
+        }
+    }
 
     public SortOrder SortOrder
     {
-        get => _workspaceStateCache?.SortOrder ?? default;
+        get => (SortOrder)(_workspaceStateCache?.SortOrder ?? default);
         set
         {
-            if (_workspaceStateCache.SortOrder == value) return;
+            if ((SortOrder)_workspaceStateCache.SortOrder == value) return;
 
-            _workspaceStateCache.SortOrder = value;
+            _workspaceStateCache.SortOrder = (PhotoPasser.Primitive.SortOrder)value;
             DebouncedSaveWorkspaceState();
         }
     }
 
-    
-
     [ObservableProperty]
-    private ObservableCollection<PhotoInfo> _searchResult = new EmptyPhotoCollection();
+    private ObservableCollection<PhotoInfoViewModel> _searchResult = new EmptyPhotoCollection();
 
     [ObservableProperty]
     private FiltResult? _currentResult;
@@ -115,42 +99,37 @@ public partial class TaskWorkspaceViewModel : ObservableRecipient, IDisposable
     public FiltTask FiltTask { get; }
     public TaskDetail Detail { get; }
 
-
-
-    private readonly object _sync;
-
     public DisplayView CurrentView
     {
-        get => _workspaceStateCache?.CurrentView ?? default;
+        get => (DisplayView)(_workspaceStateCache?.CurrentView ?? default);
         set
         {
-            if (_workspaceStateCache.CurrentView == value) return;
+            if ((DisplayView)_workspaceStateCache.CurrentView == value) return;
 
-            _workspaceStateCache.CurrentView = value;
+            _workspaceStateCache.CurrentView = (PhotoPasser.Primitive.DisplayView)value;
             DebouncedSaveWorkspaceState();
         }
     }
 
-    public TaskWorkspaceViewModel(FiltTask task, ITaskDetailPhysicalManagerService service, TaskDetail detail, FiltResult result = null)
+    public TaskWorkspaceViewModel(FiltTask task, ITaskDetailPhysicalManagerService service, TaskDetail detail, FiltResult? result = null)
     {
         FiltTask = task;
         _taskDpmService = service;
         Detail = detail;
         CurrentResult = result;
         _workspaceViewManager = service.WorkspaceViewManager;
+
+
         // try resolve clipboard service from root provider (scoped provider not available here)
-        _clipboardService = App.GetService<IClipboardService>();
-        _dialogService = App.GetService<IDialogService>();
-        
-        _results = Detail.Results;
+        _clipboardService = App.GetService<IClipboardService>()!;
+        _dialogService = App.GetService<IDialogService>()!;
+
+        _results = new ObservableCollection<FiltResult>(Detail.Results ?? new List<FiltResult>());
         _favoriteResults = new ObservableCollection<FiltResult>(Detail.Results.Where(r => r.IsFavorite));
         _displayedResults = _results;
+        Photos = new ObservableCollection<PhotoInfoViewModel>((Detail.Photos ?? new List<PhotoInfo>()).Select(p => new PhotoInfoViewModel(p)));
 
-        WeakReferenceMessenger.Default.Register<FiltResult, string>(this, "AddToFavorite", (r, m) =>
-        {
-            m.IsFavorite = true;
-            _favoriteResults.Add(m);
-        });
+        WeakReferenceMessenger.Default.Register<FiltResult, string>(this, "AddToFavorite", AddToFavorite);
 
         WeakReferenceMessenger.Default.Register<FiltResult, string>(this, "RemoveFromFavorite", (r, m) =>
         {
@@ -161,7 +140,6 @@ public partial class TaskWorkspaceViewModel : ObservableRecipient, IDisposable
                 IsFavoriteResultsSelection = false;
                 DisplayedResultSelectedIndex = _results.IndexOf(m);
             }
-                
         });
 
         WeakReferenceMessenger.Default.Register<FiltResult, string>(this, "DeleteResult", (r, m) =>
@@ -191,8 +169,8 @@ public partial class TaskWorkspaceViewModel : ObservableRecipient, IDisposable
                 Date = DateTime.Now,
                 Description = m.Description,
                 Name = m.Name,
-                Photos = m.FiltedPhotos.AsObservable(),
-                PinnedPhotos = [],
+                Photos = m.FiltedPhotos ?? new List<PhotoInfo>(),
+                PinnedPhotos = new List<PhotoInfo>(),
                 IsFavorite = false,
                 ResultId = Guid.NewGuid()
             };
@@ -206,6 +184,12 @@ public partial class TaskWorkspaceViewModel : ObservableRecipient, IDisposable
         });
 
         PropertyChanging += TaskWorkspaceViewModel_PropertyChanging;
+    }
+
+    private void AddToFavorite(object r, FiltResult m)
+    {
+        m.IsFavorite = true;
+        _favoriteResults.Add(m);
     }
 
     private void TaskWorkspaceViewModel_PropertyChanging(object? sender, System.ComponentModel.PropertyChangingEventArgs e)
@@ -239,9 +223,9 @@ public partial class TaskWorkspaceViewModel : ObservableRecipient, IDisposable
         if (state == null) return;
 
         _workspaceStateCache = state;
-        CurrentView = state.CurrentView;
-        SortBy = state.SortBy;
-        SortOrder = state.SortOrder;
+        CurrentView = (DisplayView)state.CurrentView;
+        SortBy = (SortBy)state.SortBy;
+        SortOrder = (SortOrder)state.SortOrder;
         SearchResult = new EmptyPhotoCollection();
         // selection restoration should be handled in view (page) because it requires UI elements
     }
@@ -268,9 +252,9 @@ public partial class TaskWorkspaceViewModel : ObservableRecipient, IDisposable
         {
             var state = new WorkspaceViewState
             {
-                CurrentView = this.CurrentView,
-                SortBy = this.SortBy,
-                SortOrder = this.SortOrder,
+                CurrentView = (PhotoPasser.Primitive.DisplayView)this.CurrentView,
+                SortBy = (PhotoPasser.Primitive.SortBy)this.SortBy,
+                SortOrder = (PhotoPasser.Primitive.SortOrder)this.SortOrder,
                 SearchText = null // could be wired if you expose SearchText property
             };
             await _workspaceViewManager!.SaveAsync(state);
@@ -290,6 +274,7 @@ public partial class TaskWorkspaceViewModel : ObservableRecipient, IDisposable
         var photoInfo = await _taskDpmService.CreatePhotoInfoAsync(prepared);
 
         Detail.Photos.Add(photoInfo);
+        Photos.Add(new PhotoInfoViewModel(photoInfo));
 
         if (Detail.Photos.Count == 1)
         {
@@ -332,11 +317,11 @@ public partial class TaskWorkspaceViewModel : ObservableRecipient, IDisposable
             }
         });
 
-        if (!(await _dialogService.ShowConfirmAsync(
-            title: "DeleteFileTitle".GetLocalized(LC.TaskWorkspace),
-            message: RemoveTips,
-            primaryButtonText: "DeletePrompt".GetLocalized(LC.General),
-            closeButtonText: "CancelPrompt".GetLocalized(LC.General))))
+        if (!await _dialogService.ShowConfirmAsync(
+                        title: "DeleteFileTitle".GetLocalized(LC.TaskWorkspace)!,
+                        message: RemoveTips,
+                        primaryButtonText: "DeletePrompt".GetLocalized(LC.General)!,
+                        closeButtonText: "CancelPrompt".GetLocalized(LC.General)!))
         {
             return (true, false);
         }

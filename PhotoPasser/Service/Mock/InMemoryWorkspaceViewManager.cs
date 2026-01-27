@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace PhotoPasser.Service;
+namespace PhotoPasser.Service.Mock;
 
 public class InMemoryWorkspaceViewManager : IWorkspaceViewManager
 {

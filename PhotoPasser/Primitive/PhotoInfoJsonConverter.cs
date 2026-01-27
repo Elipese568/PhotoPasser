@@ -1,4 +1,5 @@
 ﻿using PhotoPasser.Helper;
+using PhotoPasser.Models;
 using System;
 using System.IO;
 using System.Text.Json;
@@ -6,7 +7,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Windows.Storage;
 
-namespace PhotoPasser;
+namespace PhotoPasser.Primitive;
 
 internal class PhotoInfoJsonConverter : JsonConverter<PhotoInfo>
 {

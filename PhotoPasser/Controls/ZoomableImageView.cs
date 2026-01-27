@@ -203,7 +203,7 @@ public sealed partial class ZoomableImageView : Control
         {
             _counterclockwiseFlipButton.Click += (s, e) =>
             {
-                _canvas.CenterPoint = new((float)_canvas.ActualWidth * 0.5F, (float)_canvas.ActualHeight * 0.5F, 0);
+                _canvas!.CenterPoint = new((float)_canvas.ActualWidth * 0.5F, (float)_canvas.ActualHeight * 0.5F, 0);
                 _canvas.Rotation -= 90;
             };
         }
@@ -212,7 +212,7 @@ public sealed partial class ZoomableImageView : Control
         {
             _clockwiseFlipButton.Click += (s, e) =>
             {
-                _canvas.CenterPoint = new((float)_canvas.ActualWidth * 0.5F, (float)_canvas.ActualHeight * 0.5F, 0);
+                _canvas!.CenterPoint = new((float)_canvas.ActualWidth * 0.5F, (float)_canvas.ActualHeight * 0.5F, 0);
                 _canvas.Rotation += 90;
             };
         }

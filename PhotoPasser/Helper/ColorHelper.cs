@@ -139,7 +139,7 @@ public static class ColorHelper
     {
         var (h, s, l) = RGBToHSL(source);
 
-        bool isDarkTheme = (App.Current.MainWindow.Content as Grid).RequestedTheme switch
+        bool isDarkTheme = (App.GetService<MainWindow>()!.Content as Grid)!.RequestedTheme switch
         {
             ElementTheme.Dark => true,
             ElementTheme.Light => false,

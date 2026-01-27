@@ -11,7 +11,7 @@ public class DialogService : IDialogService
     {
         var dialog = new TextBoxDialog(title, message, defaultText, isPassword)
         {
-            XamlRoot = parentWindow?.Content.XamlRoot ?? App.Current.MainWindow.Content.XamlRoot
+            XamlRoot = parentWindow?.Content.XamlRoot ?? App.GetService<MainWindow>()!.Content.XamlRoot
         };
         var res = await dialog.ShowAsync();
         return res == ContentDialogResult.Primary ? dialog.Text : null;
@@ -26,7 +26,7 @@ public class DialogService : IDialogService
             PrimaryButtonText = primaryButtonText,
             CloseButtonText = closeButtonText,
             DefaultButton = ContentDialogButton.Primary,
-            XamlRoot = parentWindow?.Content.XamlRoot ?? App.Current.MainWindow.Content.XamlRoot
+            XamlRoot = parentWindow?.Content.XamlRoot ?? App.GetService<MainWindow>()!.Content.XamlRoot
         };
         var r = await cd.ShowAsync();
         return r == ContentDialogResult.Primary;

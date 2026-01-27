@@ -15,7 +15,7 @@ public class FileIconConverter : IValueConverter
     private static Dictionary<string, BitmapImage> _cache = new();
     public object Convert(object value, Type targetType, object parameter, string language)
     {
-        string rawValExt = Path.GetExtension(value as string);
+        string rawValExt = Path.GetExtension(value as string)!;
         if (_cache.TryGetValue(rawValExt, out var result))
             return result;
         BitmapImage icon = new();

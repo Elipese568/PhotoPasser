@@ -39,7 +39,7 @@ public partial class AddTaskDialogViewModel : ObservableObject
     [RelayCommand]
     public async Task BrowseDestinationPath()
     {
-        FolderPicker folderPicker = new FolderPicker(App.Current.MainWindow.AppWindow.Id);
+        FolderPicker folderPicker = new FolderPicker(App.GetService<MainWindow>()!.AppWindow.Id);
         // 使用 Resource.resw 中的公共资源
         folderPicker.CommitButtonText = "ChoosePrompt".GetLocalized();
         var folder = await folderPicker.PickSingleFolderAsync();

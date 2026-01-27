@@ -11,7 +11,7 @@ namespace PhotoPasser.Helper;
 
 public static class StorageItemProvider
 {
-    private static Dictionary<string, FileInfo> _fileInfoCache = new();
+    private static Dictionary<string?, FileInfo> _fileInfoCache = new();
 
     public static async Task<StorageFile> GetStorageFile(string filePath, bool applicationFileFallback = true) 
         => await GetStorageFile(new Uri(filePath), applicationFileFallback);

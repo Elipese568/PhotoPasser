@@ -45,12 +45,13 @@ public class SettingProvider : ObservableObject
     }
     public static void ApplySetting()
     {
-        (App.Current.MainWindow.Content as Grid).RequestedTheme = Instance.RequestedTheme switch
+        (App.GetService<MainWindow>()!.Content as Grid).RequestedTheme = Instance.RequestedTheme switch
         {
             0 => ElementTheme.Default,
             1 => ElementTheme.Light,
             2 => ElementTheme.Dark,
-        };
+            _ => ElementTheme.Default
+		};
     }
     private EventHandlerWrapper<EventHandler> _themeChanged = EventHandlerWrapper<EventHandler>.Create();
 	public event EventHandler ThemeChanged
@@ -76,13 +77,14 @@ public class SettingProvider : ObservableObject
         set
         {
             SetSetting(nameof(RequestedTheme), value);
-            App.Current.MainWindow.DispatcherQueue.TryEnqueue(() =>
+            App.GetService<MainWindow>()!.DispatcherQueue.TryEnqueue(() =>
             {
-                (App.Current.MainWindow.Content as Grid).RequestedTheme = value switch
+                (App.GetService<MainWindow>()!.Content as Grid).RequestedTheme = value switch
                 {
                     0 => ElementTheme.Default,
                     1 => ElementTheme.Light,
                     2 => ElementTheme.Dark,
+                    _ => ElementTheme.Default
                 };
 				_themeChanged.Invoke(this, EventArgs.Empty);
 			});

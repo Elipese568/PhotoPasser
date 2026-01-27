@@ -49,12 +49,12 @@ namespace PhotoPasser
                 Target = LanguageSelectComboBox,
                 XamlRoot = this.Content.XamlRoot,
             };
-            (Content as Grid).Children.Add(languageChangedTip);
+            (Content as Grid)!.Children.Add(languageChangedTip);
 
             _startLanguage = SettingProvider.Instance.Language;
 
             var presenter = this.AppWindow.Presenter as OverlappedPresenter;
-            presenter.PreferredMinimumWidth = 1080 + 2;
+            presenter!.PreferredMinimumWidth = 1080 + 2;
             presenter.PreferredMinimumHeight = 512;
         }
 

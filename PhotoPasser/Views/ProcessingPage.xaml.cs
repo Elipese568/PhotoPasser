@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
 using PhotoPasser.Helper;
+using PhotoPasser.Models;
 using PhotoPasser.Strings;
 using System;
 using System.Collections.Generic;
@@ -14,56 +15,10 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace PhotoPasser;
+namespace PhotoPasser.Views;
 
-public enum FiltingStatus
-{
-    Unset,
-    Filtered,
-    Unfiltered
-}
-
-public partial class FiltingPhotoInfo : PhotoInfo
-{
-    [ObservableProperty]
-    private FiltingStatus _status;
-
-    public static FiltingPhotoInfo Create(PhotoInfo info)
-    {
-        return new FiltingPhotoInfo
-        {
-            Path = info.Path,
-            UserName = info.UserName,
-            Size = info.Size,
-            DateCreated = info.DateCreated,
-            DateModified = info.DateModified
-        };
-    }
-}
-
-public partial class ProcessingPageViewModel : ObservableObject
-{
-    [ObservableProperty]
-    private string _name;
-
-    [ObservableProperty]
-    private string _description;
-
-    [ObservableProperty]
-    private string _step = "Setup";
-
-    [ObservableProperty]
-    private int _selectedPhotoIndex;
-
-    [ObservableProperty]
-    private int _acceptedCount;
-
-    [ObservableProperty]
-    private int _rejectedCount;
-
-    public ObservableCollection<PhotoInfo> DisplayedPhotos { get; set; }
-    public ObservableCollection<FiltingPhotoInfo> FiltingPhotos { get; set; }
-}
+using PhotoPasser.Primitive;
+using PhotoPasser.ViewModels;
 
 public class FiltingItemTrumbullMaskBrushConverter : DependencyObject, IValueConverter
 {
@@ -121,11 +76,13 @@ public sealed partial class ProcessingPage : Page
         InitializeComponent();
     }
 
-    protected override void OnNavigatedTo(NavigationEventArgs e)
+    protected override async void OnNavigatedTo(NavigationEventArgs e)
     {
-        var photos = e.Parameter as ObservableCollection<PhotoInfo>;
-        ViewModel.DisplayedPhotos = photos;
-        ViewModel.FiltingPhotos = photos.Select(x => FiltingPhotoInfo.Create(x)).AsObservable();
+        if (e.Parameter is IEnumerable<PhotoInfo> photos)
+        {
+            ViewModel.DisplayedPhotos = photos.Select(x => new PhotoInfoViewModel(x)).AsObservable();
+            ViewModel.FiltingPhotos = photos.Select(x => FiltingPhotoInfoViewModel.Create(x)).AsObservable();
+        }
         base.OnNavigatedTo(e);
     }
 
@@ -136,7 +93,7 @@ public sealed partial class ProcessingPage : Page
 
     private void ExitButton_Click(object sender, RoutedEventArgs e)
     {
-        App.Current.MainWindow.Frame.GoBack();
+        App.GetService<MainWindow>()!.Frame.GoBack();
     }
 
     private async void StartButton_Click(object sender, RoutedEventArgs e)
@@ -162,7 +119,7 @@ public sealed partial class ProcessingPage : Page
         if (e.AddedItems.Count == 0)
             return;
         var obj = e.AddedItems[0];
-        await (sender as GridView).SmoothScrollIntoViewWithItemAsync(obj, CommunityToolkit.WinUI.ScrollItemPlacement.Center, scrollIfVisible: true);
+        await (sender as GridView)!.SmoothScrollIntoViewWithItemAsync(obj, CommunityToolkit.WinUI.ScrollItemPlacement.Center, scrollIfVisible: true);
     }
 
     private async void Reject_KeyboardAccelerator_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
@@ -266,11 +223,11 @@ public sealed partial class ProcessingPage : Page
 
         WeakReferenceMessenger.Default.Send(new FiltingFinishedMessage()
         {
-            FiltedPhotos = ViewModel.FiltingPhotos.Where(x => x.Status == FiltingStatus.Filtered).Cast<PhotoInfo>().ToList(),
+            FiltedPhotos = ViewModel.FiltingPhotos.Where(x => x.Status == FiltingStatus.Filtered).Select(x => x.Model).ToList(),
             Name = ViewModel.Name,
             Description = ViewModel.Description
         });
-        App.Current.MainWindow.Frame.GoBack();
+        App.GetService<MainWindow>()!.Frame.GoBack();
     }
 }
 

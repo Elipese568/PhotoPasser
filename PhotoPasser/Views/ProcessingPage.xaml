@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Page
-    x:Class="PhotoPasser.ProcessingPage"
+    x:Class="PhotoPasser.Views.ProcessingPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:PhotoPasser"
+    xmlns:local="using:PhotoPasser.Views"
+    xmlns:models="using:PhotoPasser.Models"
+    xmlns:viewmodels="using:PhotoPasser.ViewModels"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tk="using:CommunityToolkit.WinUI.Controls"
@@ -127,9 +129,9 @@
                 </Grid>
                 <controls:PhotoFlipView SelectedIndex="{x:Bind ViewModel.SelectedPhotoIndex,Mode=TwoWay}" x:Name="ImageViewFlipView" Grid.Row="1" Photos="{x:Bind ViewModel.DisplayedPhotos}">
                     <controls:PhotoFlipView.HeaderTemplate>
-                        <DataTemplate x:DataType="local:PhotoInfo">
-                            <TextBlock Text="{x:Bind UserName}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                        </DataTemplate>
+                            <DataTemplate x:DataType="viewmodels:PhotoInfoViewModel">
+                                <TextBlock Text="{x:Bind UserName}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            </DataTemplate>
                     </controls:PhotoFlipView.HeaderTemplate>
                 </controls:PhotoFlipView>
                 <Grid Grid.Row="2" Padding="16,8" BorderBrush="{ThemeResource DividerStrokeColorDefault}" BorderThickness="0,1">
@@ -176,7 +178,7 @@
                         </GridView.ItemContainerStyle>
 
                         <GridView.ItemTemplate>
-                            <DataTemplate x:DataType="local:FiltingPhotoInfo">
+                            <DataTemplate x:DataType="viewmodels:FiltingPhotoInfoViewModel">
                                 <Grid Width="150" VerticalAlignment="Stretch" CornerRadius="{StaticResource OverlayCornerRadius}">
                                     <Image Source="{x:Bind Path, Converter={StaticResource UriImageSourceConverter}}"/>
                                     <Rectangle HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="{x:Bind Status,Mode=OneWay,Converter={StaticResource FitmbConverter}}">

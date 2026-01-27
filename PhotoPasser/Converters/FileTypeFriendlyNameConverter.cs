@@ -53,7 +53,7 @@ public class FileTypeFriendlyNameConverter : IValueConverter
 
     public object Convert(object value, Type targetType, object parameter, string language)
     {
-        return GetFriendlyTypeName(Path.GetExtension(value as string));
+        return GetFriendlyTypeName(Path.GetExtension(value as string)!);
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, string language)

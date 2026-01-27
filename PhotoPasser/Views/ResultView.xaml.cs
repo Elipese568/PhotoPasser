@@ -12,7 +12,6 @@ using Microsoft.Windows.Storage.Pickers;
 using PhotoPasser.Converters;
 using PhotoPasser.Dialog;
 using PhotoPasser.Helper;
-using PhotoPasser.Service;
 using PhotoPasser.Strings;
 using System;
 using System.Collections.Generic;
@@ -30,36 +29,15 @@ using Windows.System;
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
-namespace PhotoPasser;
+namespace PhotoPasser.Views;
 
-public partial class ResultViewModel : ObservableObject
-{
-    [ObservableProperty]
-    private FiltResult currentResult;
-
-    public ITaskDetailPhysicalManagerService TaskDpmService;
-    public async Task GotoResultFolder()
-    {
-        await Launcher.LaunchFolderAsync(await TaskDpmService.GetResultFolderAsync(CurrentResult));
-    }
-
-    public async Task<string> GetResultFolder()
-    {
-        return (await TaskDpmService.GetResultFolderAsync(CurrentResult)).Path;
-    }
-
-}
-
-public class ResultViewNavigationParameter
-{
-    public ITaskDetailPhysicalManagerService TaskDpmService { get; set; }
-    public FiltResult NavigatingResult { get; set; }
-}
+using PhotoPasser.Primitive;
+using PhotoPasser.ViewModels;
 
 /// <summary>
 /// An empty page that can be used on its own or navigated to within a Frame.
 /// </summary>
-[ObservableObject]
+
 public sealed partial class ResultView : Page
 {
     public TaskWorkspaceViewModel ParentViewModel;
@@ -76,7 +54,7 @@ public sealed partial class ResultView : Page
         ViewModel = new ResultViewModel()
         {
             TaskDpmService = param.TaskDpmService,
-            CurrentResult = param.NavigatingResult
+            CurrentResult = new PhotoPasser.ViewModels.FiltResultViewModel(param.NavigatingResult)
         };
 
         base.OnNavigatedTo(e);
@@ -114,7 +92,7 @@ public sealed partial class ResultView : Page
         if (e.AddedItems.Count == 0)
             return;
         var obj = e.AddedItems[0];
-        (sender as GridView).SmoothScrollIntoViewWithItemAsync(obj, ScrollItemPlacement.Center, scrollIfVisible: true);
+        (sender as GridView)!.SmoothScrollIntoViewWithItemAsync(obj, ScrollItemPlacement.Center, scrollIfVisible: true);
     }
 
     private async void ViewInFileExplorer_PhotoGeneralOperation_Invoked(Controls.PhotoGalleryViewer sender, Controls.ItemOperationInvokedEventArgs args)
@@ -123,9 +101,9 @@ public sealed partial class ResultView : Page
     }
 
     private FriendlySizeTextFormatConverter _innerSizeTextConverter = new();
-    public string GetSelectedItemTotalSize(ObservableCollection<PhotoInfo> photos)
+    public string GetSelectedItemTotalSize(ObservableCollection<PhotoInfoViewModel> photos)
     {
-        return _innerSizeTextConverter.Convert(photos.Sum(p => p.Size), null, null, null) as string;
+        return (_innerSizeTextConverter.Convert(photos.Sum(p => p.Size), null, null, null) as string)!;
     }
 
     private void FavoriteButton_Click(object sender, RoutedEventArgs e)
@@ -144,7 +122,7 @@ public sealed partial class ResultView : Page
 
     private async void EditButton_Click(object sender, RoutedEventArgs e)
     {
-        var page = new EditResultInformationDialogPage(ViewModel.CurrentResult);
+        var page = new EditResultInformationDialogPage(ViewModel.CurrentResult.Model);
         ContentDialog cd = new()
         {
             Title = "EditResultInformationTitle".GetLocalized(LC.ResultView),
@@ -174,7 +152,7 @@ public sealed partial class ResultView : Page
 
     private async void ExportButton_Click(object sender, RoutedEventArgs e)
     {
-        FileSavePicker savePicker = new FileSavePicker(App.Current.MainWindow.AppWindow.Id);
+        FileSavePicker savePicker = new FileSavePicker(App.GetService<MainWindow>()!.AppWindow.Id);
         savePicker.FileTypeChoices.Add("ZipDescriptor".GetLocalized(LC.General), [".zip"]);
         var file = await savePicker.PickSaveFileAsync();
         if (file == null)
@@ -182,7 +160,7 @@ public sealed partial class ResultView : Page
         using var exportFileStream = File.OpenWrite(file.Path);
         ZipFile.CreateFromDirectory(await ViewModel.GetResultFolder(), exportFileStream);
     }
-    public Visibility GetCollectionVisibility(ObservableCollection<PhotoInfo> collections)
+    public Visibility GetCollectionVisibility(ObservableCollection<PhotoInfoViewModel> collections)
     {
         return collections == null || collections.Count == 0? Visibility.Collapsed : Visibility.Visible;
     }
@@ -191,27 +169,36 @@ public sealed partial class ResultView : Page
     {
         foreach(var item in args.OperationItems)
         {
-            if(ViewModel.CurrentResult.PinnedPhotos.Contains(item))
+            // args.OperationItems are PhotoInfo (models)
+            if(ViewModel.CurrentResult.PinnedPhotos.Any(p => p.Path == item.Path))
             {
                 continue;
             }
-            ViewModel.CurrentResult.PinnedPhotos?.Add(item);
+            // add model to result's model collection and also update VM
+            ViewModel.CurrentResult.Model.PinnedPhotos.Add(item);
+            ViewModel.CurrentResult.UpdateFromModel();
         }
     }
 
     private void UnPinButton_Click(object sender, RoutedEventArgs e)
     {
-        var photo = (sender as Button).DataContext as PhotoInfo;
-        ViewModel.CurrentResult.PinnedPhotos.Remove(photo);
+        var photo = (sender as Button).DataContext as PhotoInfoViewModel;
+        var model = photo?.Model;
+        if (model != null)
+        {
+            ViewModel.CurrentResult.Model.PinnedPhotos.Remove(model);
+            ViewModel.CurrentResult.UpdateFromModel();
+        }
     }
 
     private void ContinueToFilter_PhotoGeneralOperation_Invoked(Controls.PhotoGalleryViewer sender, Controls.ItemOperationInvokedEventArgs args)
     {
-        App.Current.MainWindow.Frame.Navigate(typeof(ProcessingPage), ViewModel.CurrentResult.Photos);
+        // pass models list
+        App.GetService<MainWindow>()!.Frame.Navigate(typeof(ProcessingPage), ViewModel.CurrentResult.Photos);
     }
 
     private void ContinueToFilterBasedOnSelected_Invoked(Controls.PhotoGalleryViewer sender, Controls.ItemOperationInvokedEventArgs args)
     {
-        App.Current.MainWindow.Frame.Navigate(typeof(ProcessingPage), EnumerableExtensions.AsObservable(args.OperationItems.ToList()));
+        App.GetService<MainWindow>()!.Frame.Navigate(typeof(ProcessingPage), EnumerableExtensions.AsObservable(args.OperationItems.ToList()));
     }
 }
