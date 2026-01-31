@@ -20,6 +20,7 @@ using Microsoft.UI.Xaml.Navigation;
 using Microsoft.UI.Xaml.Shapes;
 using PhotoPasser.Primitive;
 using PhotoPasser.Service;
+using PhotoPasser.Service.Mock;
 using PhotoPasser.Service.Primitive;
 using PhotoPasser.Views;
 using Windows.ApplicationModel;
