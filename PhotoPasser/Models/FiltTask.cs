@@ -11,4 +11,6 @@ public class FiltTask
     public bool CopySource { get; set; }
     public string DestinationPath { get; set; }
     public string PresentPhoto { get; set; }
+    public DateTime CreateAt { get; set; }
+    public DateTime RecentlyVisitAt { get; set; }
 }

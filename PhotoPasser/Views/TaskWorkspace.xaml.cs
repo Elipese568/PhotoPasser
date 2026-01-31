@@ -51,10 +51,9 @@ public sealed partial class TaskWorkspace : Page
 
     protected override async void OnNavigatedTo(NavigationEventArgs e)
     {
-        
         if (e.Parameter is FiltTask task && e.NavigationMode == NavigationMode.New)
         {
-
+            task.RecentlyVisitAt = DateTime.Now;
             var _scopedServiceProvider = App.CreateScope().ServiceProvider;
             var _taskDpmService = _scopedServiceProvider.GetRequiredService<ITaskDetailPhysicalManagerService>();
             FiltTask = task;

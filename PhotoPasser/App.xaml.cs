@@ -1,4 +1,4 @@
-﻿#define MOCKING
+﻿//#define MOCKING
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,6 +19,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.UI.Xaml.Shapes;
 using PhotoPasser.Primitive;
+using PhotoPasser.Helper;
 using PhotoPasser.Service;
 using PhotoPasser.Service.Mock;
 using PhotoPasser.Service.Primitive;
@@ -53,7 +54,6 @@ namespace PhotoPasser
 
             _host = Host.CreateDefaultBuilder()
                         .UseContentRoot(AppContext.BaseDirectory)
-                        .UseEnvironment("Development")
                         .ConfigureServices((services) =>
                         {
                             services.AddSingleton<ConvertingService>(x =>
@@ -87,13 +87,12 @@ namespace PhotoPasser
             e.Handled = true;
             if (e.Exception != null)
             {
-                ContentDialog exceptionDialog = new()
+                ContentDialog exceptionDialog = new ContentDialog()
                 {
                     Content = e.Exception.ToString(),
                     PrimaryButtonText = "OK",
-                    DefaultButton = ContentDialogButton.Primary,
-                    XamlRoot = MainWindow.Content.XamlRoot
-                };
+                    DefaultButton = ContentDialogButton.Primary
+                }.With(x => x.ApplyApplicationOption());
 
                 await exceptionDialog.ShowAsync();
             }

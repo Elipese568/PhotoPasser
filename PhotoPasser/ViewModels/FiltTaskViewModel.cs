@@ -49,8 +49,31 @@ public partial class FiltTaskViewModel : ObservableObject
     public string PresentPhoto
     {
         get => Model.PresentPhoto;
-        set => Model.PresentPhoto = value;
+        set
+        {
+            Model.PresentPhoto = value;
+            OnPropertyChanged(nameof(PresentPhoto));
+        }
     }
 
+    public DateTime CreateAt
+    {
+        get => Model.CreateAt;
+        set
+        {
+            Model.CreateAt = value;
+            OnPropertyChanged(nameof(CreateAt));
+        }
+    }
+
+    public DateTime RecentlyVisitAt
+    {
+        get => Model.RecentlyVisitAt;
+        set
+        {
+            Model.RecentlyVisitAt = value;
+            OnPropertyChanged(nameof(RecentlyVisitAt));
+        }
+    }
     public FiltTaskViewModel(FiltTask model) => Model = model;
 }

@@ -34,6 +34,8 @@ public partial class AddTaskDialogViewModel : ObservableObject
     private string _destinationPath;
     [ObservableProperty]
     private bool _copySource;
+    [ObservableProperty]
+    private DateTime _createAt;
 
     public bool IsNonCreated { get; set; } = true;
     [RelayCommand]
@@ -49,6 +51,8 @@ public partial class AddTaskDialogViewModel : ObservableObject
 
         DestinationPath = folder.Path;
     }
+
+    
 }
 public class ValidationStateChangedEventArgs : EventArgs
 {
@@ -80,6 +84,7 @@ public sealed partial class EditTaskInformationDialogPage : Page
         ViewModel.DestinationPath = origin.DestinationPath;
         ViewModel.CopySource = origin.CopySource;
         ViewModel.IsNonCreated = false;
+        ViewModel.CreateAt = origin.CreateAt;
         _originTask = origin;
         InitializeComponent();
     }

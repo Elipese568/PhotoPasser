@@ -6,10 +6,11 @@
     xmlns:local="using:PhotoPasser"
     xmlns:views="using:PhotoPasser.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:tk="using:CommunityToolkit.WinUI.Controls" xmlns:p="using:PhotoPasser.Primitive"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:tk="using:CommunityToolkit.WinUI.Controls" 
+    xmlns:p="using:PhotoPasser.Primitive"
     mc:Ignorable="d"
     Title="PhotoPasser">
-
     <Window.SystemBackdrop>
         <MicaBackdrop/>
     </Window.SystemBackdrop>
@@ -18,24 +19,12 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <!--<StackPanel x:Name="TitlebarArea" 
-                Orientation="Horizontal" 
-                Height="32" 
-                HorizontalAlignment="Stretch" 
-                
-                Grid.Row="0" 
-                Padding="12,0,0,0" 
-                Spacing="12">
-            <TextBlock Style="{ThemeResource CaptionTextBlockStyle}" 
-                   HorizontalAlignment="Left" 
-                   VerticalAlignment="Center">Photo Passer</TextBlock>
-        </StackPanel>-->
+        
         <TitleBar x:Name="TitlebarArea" Grid.Row="0" Title="Photo Passer" HorizontalContentAlignment="Right">
             <TitleBar.RightHeader>
                 <Button x:Name="SettingButton" Click="SettingButton_Click" Height="48" Width="48" HorizontalAlignment="Right" Style="{StaticResource SettingWindowCaptionButton}">
                 </Button>
             </TitleBar.RightHeader>
-            
         </TitleBar>
         <SplitView x:Name="ContentSplitPane" Grid.Row="1" OpenPaneLength="640" PanePlacement="Right" PaneBackground="Transparent">
             <SplitView.Pane>

@@ -570,10 +570,7 @@ public sealed partial class PhotoGalleryViewer : UserControl
         string title = "RenameDialogTitle".GetLocalized(LC.PhotoGalleryViewer)!;
         string content = "RenameDialogContent".GetLocalized(LC.PhotoGalleryViewer)!;
 
-        var dialog = new TextBoxDialog(title, content, file.UserName, false)
-        {
-            XamlRoot = App.GetService<MainWindow>()!.Content.XamlRoot
-        };
+        var dialog = new TextBoxDialog(title, content, file.UserName, false).With(x => x.ApplyApplicationOption());
         if (await dialog.ShowAsync() == ContentDialogResult.Primary)
         {
             var newName = dialog.Text;
@@ -779,12 +776,12 @@ public sealed partial class PhotoGalleryViewer : UserControl
 
     public async Task ShowProperties(object param)
     {
-        if (param is IEnumerable<PhotoInfoViewModel> photos)
+        if (param is IEnumerable<PhotoInfo> photos)
         {
             var paths = await photos.Select(p => StorageItemProvider.GetRawFilePath(p.Path)).EvalResults().ToListAsync();
             ShellInterop.ShowFileProperties(paths.ToArray());
         }
-        else if (param is PhotoInfoViewModel photo)
+        else if (param is PhotoInfo photo)
         {
             ShellInterop.ShowFileProperties(await StorageItemProvider.GetRawFilePath(photo.Path), WinRT.Interop.WindowNative.GetWindowHandle(App.GetService<MainWindow>()!));
         }

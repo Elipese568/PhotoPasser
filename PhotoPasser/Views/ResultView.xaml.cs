@@ -123,15 +123,14 @@ public sealed partial class ResultView : Page
     private async void EditButton_Click(object sender, RoutedEventArgs e)
     {
         var page = new EditResultInformationDialogPage(ViewModel.CurrentResult.Model);
-        ContentDialog cd = new()
+        ContentDialog cd = new ContentDialog()
         {
             Title = "EditResultInformationTitle".GetLocalized(LC.ResultView),
             Content = page,
             PrimaryButtonText = "SavePrompt".GetLocalized(LC.General),
             CloseButtonText = "CancelPrompt".GetLocalized(LC.General),
             DefaultButton = ContentDialogButton.Primary,
-            XamlRoot = this.XamlRoot
-        };
+        }.With(x => x.ApplyApplicationOption());
 
         if (await cd.ShowAsync() != ContentDialogResult.Primary)
             return;

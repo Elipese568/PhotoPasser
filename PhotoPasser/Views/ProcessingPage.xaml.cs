@@ -100,13 +100,12 @@ public sealed partial class ProcessingPage : Page
     {
         if (string.IsNullOrEmpty(ViewModel.Name))
         {
-            ContentDialog cd = new()
+            ContentDialog cd = new ContentDialog()
             {
                 Content = "ProjectNameRequiredErrorContent".GetLocalized(LC.ProcessingPage),
                 Title = "ErrorPrompt".GetLocalized(LC.General),
                 CloseButtonText = "OkPrompt".GetLocalized(LC.General),
-                XamlRoot = this.XamlRoot
-            };
+            }.With(x => x.ApplyApplicationOption());
 
             await cd.ShowAsync();
             return;
@@ -198,25 +197,23 @@ public sealed partial class ProcessingPage : Page
     {
         if ((ViewModel.AcceptedCount + ViewModel.RejectedCount) != ViewModel.FiltingPhotos.Count)
         {
-            ContentDialog cd = new()
+            ContentDialog cd = new ContentDialog()
             {
                 Content = "UnvotedPhotosErrorContent".GetLocalized(LC.ProcessingPage),
                 Title = "ErrorPrompt".GetLocalized(LC.General),
                 CloseButtonText = "OkPrompt".GetLocalized(LC.General),
-                XamlRoot = this.XamlRoot
-            };
+            }.With(x => x.ApplyApplicationOption());
             await cd.ShowAsync();
             return;
         }
         if (ViewModel.RejectedCount == ViewModel.FiltingPhotos.Count)
         {
-            ContentDialog cd = new()
+            ContentDialog cd = new ContentDialog()
             {
                 Content = "AllRejectedErrorContent".GetLocalized(LC.ProcessingPage),
                 Title = "ErrorPrompt".GetLocalized(LC.General),
                 CloseButtonText = "OkPrompt".GetLocalized(LC.General),
-                XamlRoot = this.XamlRoot
-            };
+            }.With(x => x.ApplyApplicationOption());
             await cd.ShowAsync();
             return;
         }

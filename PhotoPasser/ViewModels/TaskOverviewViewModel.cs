@@ -1,12 +1,14 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.WinUI;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using PhotoPasser.Dialog;
 using PhotoPasser.Models;
 using PhotoPasser.Primitive;
 using PhotoPasser.Service;
 using PhotoPasser.Strings;
+using PhotoPasser.Helper;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -65,8 +67,7 @@ public sealed partial class TaskOverviewViewModel : ObservableObject
             CloseButtonText = "CancelPrompt".GetLocalized(LC.General),
             DefaultButton = ContentDialogButton.Primary,
             IsPrimaryButtonEnabled = false,
-            XamlRoot = App.GetService<MainWindow>()!.Content.XamlRoot,
-        };
+        }.With(x => x.ApplyApplicationOption());
         page.ValidationStateChanged += (s, e) =>
         {
             cd.IsPrimaryButtonEnabled = e.IsValid;
@@ -80,11 +81,13 @@ public sealed partial class TaskOverviewViewModel : ObservableObject
         var newTask = new FiltTask()
         {
             Name = page.ViewModel.TaskName,
+            CreateAt = DateTime.Now,
             DestinationPath = page.ViewModel.DestinationPath,
             CopySource = page.ViewModel.CopySource,
             Description = page.ViewModel.Description,
             Id = Guid.NewGuid(),
-            PresentPhoto = App.Current.Resources["EmptyTaskItemPresentPhotoPath"] as string
+            PresentPhoto = App.Current.Resources["EmptyTaskItemPresentPhotoPath"] as string,
+            RecentlyVisitAt = DateTime.Now
         };
 
         _taskItemService.AddTask(newTask);
@@ -100,10 +103,9 @@ public sealed partial class TaskOverviewViewModel : ObservableObject
             Content = page,
             PrimaryButtonText = "SavePrompt".GetLocalized(LC.General),
             CloseButtonText = "CancelPrompt".GetLocalized(LC.General),
-            DefaultButton = ContentDialogButton.Primary,
-            XamlRoot = App.GetService<MainWindow>()!.Content.XamlRoot,
-        };
-        var result = await cd.ShowAsync(ContentDialogPlacement.InPlace);
+            DefaultButton = ContentDialogButton.Primary
+        }.With(x => x.ApplyApplicationOption());
+        var result = await cd.ShowAsync();
         if (result == ContentDialogResult.Secondary)
         {
             return;
@@ -115,7 +117,9 @@ public sealed partial class TaskOverviewViewModel : ObservableObject
             CopySource = page.ViewModel.CopySource,
             Description = page.ViewModel.Description,
             Id = task.Id,
-            PresentPhoto = task.PresentPhoto
+            PresentPhoto = task.PresentPhoto,
+            CreateAt = task.CreateAt,
+            RecentlyVisitAt = task.RecentlyVisitAt
         };
         _taskItemService.UpdateTask(updatedTask);
     }
@@ -130,8 +134,7 @@ public sealed partial class TaskOverviewViewModel : ObservableObject
             PrimaryButtonText = "DeletePrompt".GetLocalized(LC.General),
             CloseButtonText = "CancelPrompt".GetLocalized(LC.General),
             DefaultButton = ContentDialogButton.Close,
-            XamlRoot = App.GetService<MainWindow>()!.Content.XamlRoot,
-        };
+        }.With(x => x.ApplyApplicationOption());
 
         if (await cd.ShowAsync() == ContentDialogResult.None)
         {

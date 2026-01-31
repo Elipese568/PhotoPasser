@@ -35,11 +35,15 @@ namespace PhotoPasser
     {
         public MainWindow()
         {
+            
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(TitlebarArea);
             this.AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
             InitializeComponent();
-
+            ButtonThemeWorkaround = new WindowCaptionButtonThemeWorkaround()
+            {
+                Window = this
+            };
             languageChangedTip = new()
             {
                 IconSource = new SymbolIconSource()
@@ -59,6 +63,7 @@ namespace PhotoPasser
         }
 
         public Frame Frame => contentFrame;
+        public WindowCaptionButtonThemeWorkaround ButtonThemeWorkaround { get; private set; }
 
         private void SettingButton_Click(object sender, RoutedEventArgs e)
         {

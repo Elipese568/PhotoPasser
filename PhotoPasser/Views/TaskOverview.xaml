@@ -20,7 +20,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="1*" />
         </Grid.RowDefinitions>
-        <TextBlock x:Uid="ms-resource:///TaskOverview/HomeLabel" Grid.Row="0" Style="{ThemeResource TitleTextBlockStyle}"/>
+        <TextBlock Grid.Row="0" Style="{ThemeResource TitleTextBlockStyle}" x:Uid="ms-resource:///TaskOverview/HomeLabel"/>
         <Grid Grid.Row="1" RowSpacing="16">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
@@ -41,20 +41,22 @@
                                     <c:MaskStop Offset="0.0" Alpha="0"/>
                                     <c:MaskStop Offset="0.3" Alpha="0"/>
                                     <c:MaskStop Offset="0.5" Alpha="120"/>
-                                    <c:MaskStop Offset="0.623" Alpha="210"/>
+                                    <c:MaskStop Offset="0.576" Alpha="210"/>
                                     <c:MaskStop Offset="1.0" Alpha="255"/>
-
                                 </c:ImageMaskSurface.MaskStops>
-                                <Grid ColumnSpacing="16" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                                    <Grid HorizontalAlignment="Stretch" MaxHeight="100" VerticalAlignment="Bottom" Padding="16,0,16,16">
+                                
+                                <Grid ColumnSpacing="16" Padding="16" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                    
+                                    <Grid HorizontalAlignment="Stretch" MaxHeight="88" VerticalAlignment="Bottom">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="20" />
                                             <RowDefinition Height="*"/>
+                                            <RowDefinition Height="Auto"/>
                                         </Grid.RowDefinitions>
                                         <TextBlock Grid.Row="0" Style="{ThemeResource BodyStrongTextBlockStyle}" Text="{x:Bind Name}"/>
                                         <TextBlock Grid.Row="1" Style="{ThemeResource BodyTextBlockStyle}" TextWrapping="Wrap" VerticalAlignment="Stretch" Text="{x:Bind Description}"/>
                                     </Grid>
-                                    <Button Name="OptionSettingButton" Visibility="Collapsed" HorizontalAlignment="Right" Style="{StaticResource DefaultButtonStyle}" VerticalAlignment="Top" Margin="8">
+                                    <Button Name="OptionSettingButton" Visibility="Collapsed" HorizontalAlignment="Right" Style="{StaticResource DefaultButtonStyle}" VerticalAlignment="Top">
                                         <FontIcon Glyph="&#xE712;" />
                                         <Button.Flyout>
                                             <MenuFlyout>

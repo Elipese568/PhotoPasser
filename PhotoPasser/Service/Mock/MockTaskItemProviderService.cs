@@ -10,9 +10,36 @@ namespace PhotoPasser.Service.Mock;
 public class MockTaskItemProviderService : ITaskItemProviderService
 {
     private List<FiltTask> _tasks = [
-        new FiltTask { Id = Guid.NewGuid(), Name = "Task 1", Description = "Description 1", PresentPhoto = "ms-appx:///Assets/StoreLogo.png", DestinationPath = Path.GetTempPath() },
-        new FiltTask { Id = Guid.NewGuid(), Name = "Task 2", Description = "Looooooooooooooo oooooooooooo oooooooooooo nggggggggg Description 2", PresentPhoto = "ms-appx:///Assets/StoreLogo.png", DestinationPath = Path.GetTempPath() },
-        new FiltTask { Id = Guid.NewGuid(), Name = "Task 3", Description = "", PresentPhoto = "ms-appx:///Assets/StoreLogo.png", DestinationPath = Path.GetTempPath() },
+        new FiltTask 
+        { 
+            Id = Guid.NewGuid(), 
+            Name = "Task 1", 
+            CreateAt = DateTime.Now.AddDays(-2),
+            RecentlyVisitAt = DateTime.Now,
+            Description = "Description 1", 
+            PresentPhoto = "ms-appx:///Assets/StoreLogo.png", 
+            DestinationPath = Path.GetTempPath() 
+        },
+        new FiltTask 
+        { 
+            Id = Guid.NewGuid(), 
+            Name = "Task 2", 
+            CreateAt = DateTime.Now.AddDays(-3),
+            RecentlyVisitAt = DateTime.Now.AddDays(-1),
+            Description = "Looooooooooooooo oooooooooooo oooooooooooo nggggggggg Description 2", 
+            PresentPhoto = "ms-appx:///Assets/StoreLogo.png", 
+            DestinationPath = Path.GetTempPath() 
+        },
+        new FiltTask 
+        { 
+            Id = Guid.NewGuid(), 
+            Name = "Task 3", 
+            CreateAt = DateTime.Now.AddDays(-3),
+            RecentlyVisitAt = DateTime.Now.AddDays(-2),
+            Description = "", 
+            PresentPhoto = "ms-appx:///Assets/StoreLogo.png", 
+            DestinationPath = Path.GetTempPath() 
+        },
 
     ];
 
