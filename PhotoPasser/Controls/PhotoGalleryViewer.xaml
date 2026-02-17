@@ -282,7 +282,6 @@
               Margin="0,1,0,0"
               Height="32"
               HorizontalAlignment="Stretch"
-              Background="{x:Bind ItemPanelBackground, TargetNullValue={ThemeResource LayerOnMicaBaseAltFillColorDefaultBrush}}"
               Visibility="{x:Bind FileDetailHeaderVisibility, Mode=OneWay}"
               BorderBrush="{ThemeResource DividerStrokeColorDefault}"
               BorderThickness="0,1,0,0"
@@ -305,8 +304,7 @@
                 <TextBlock x:Uid="ms-resource:///PhotoGalleryViewer/HeaderSizeTextBlock" Grid.Column="5" Margin="30,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{ThemeResource TextFillColorSecondary}"/>
             </Grid>
         </Grid>
-        <GridView Background="{x:Bind ItemPanelBackground, TargetNullValue={ThemeResource LayerOnMicaBaseAltFillColorDefaultBrush}}"
-                  RelativePanel.AlignLeftWithPanel="True"
+        <GridView RelativePanel.AlignLeftWithPanel="True"
                   RelativePanel.AlignRightWithPanel="True"
                   RelativePanel.Below="DataTableHeader"
                   RelativePanel.Above="StatusBar"
@@ -380,5 +378,22 @@
             <TextBlock x:Name="SelectedCountStatusTextBlock" VerticalAlignment="Center" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondary}"/>
             <TextBlock VerticalAlignment="Center" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondary}" x:Name="SizeStatusBarTextBlock"/>
         </StackPanel>
+
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="ItemPanelBackgroundStates">
+                <VisualState x:Name="LayerOnMicaBaseAltFillColorDefaultState">
+                    <VisualState.Setters>
+                        <Setter Target="DataTableHeader.Background" Value="{ThemeResource LayerOnMicaBaseAltFillColorDefaultBrush}"/>
+                        <Setter Target="ResourceItemsView.Background" Value="{ThemeResource LayerOnMicaBaseAltFillColorDefaultBrush}"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="LayerFillColorDefaultState">
+                    <VisualState.Setters>
+                        <Setter Target="DataTableHeader.Background" Value="{ThemeResource LayerFillColorDefault}"/>
+                        <Setter Target="ResourceItemsView.Background" Value="{ThemeResource LayerFillColorDefault}"/>
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
     </RelativePanel>
 </UserControl>

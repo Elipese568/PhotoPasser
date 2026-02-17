@@ -203,6 +203,7 @@ public sealed partial class PhotoGalleryViewer : UserControl
         _dialogService = App.GetService<IDialogService>();
         InitializeComponent();
         Loaded += PhotoGalleryViewer_Loaded;
+
         RegisterPropertyChangedCallback(CurrentViewProperty, (obj, p) =>
         {
             FileDetailHeaderVisibility = CurrentView == DisplayView.Details ? Visibility.Visible : Visibility.Collapsed;
@@ -372,7 +373,26 @@ public sealed partial class PhotoGalleryViewer : UserControl
     public static readonly DependencyProperty ItemPanelBackgroundProperty =
         DependencyProperty.Register(nameof(ItemPanelBackground), typeof(Brush), typeof(PhotoGalleryViewer), new PropertyMetadata(null));
 
+    public ItemPanelBackgroundThemeResource ItemPanelBackgroundTheme
+    {
+        get { return (ItemPanelBackgroundThemeResource)GetValue(ItemPanelBackgroundThemeProperty); }
+        set { if (value != ItemPanelBackgroundTheme) SetValue(ItemPanelBackgroundThemeProperty, value); }
+    }
 
+    public static readonly DependencyProperty ItemPanelBackgroundThemeProperty =
+        DependencyProperty.Register(
+            nameof(ItemPanelBackgroundTheme),
+            typeof(ItemPanelBackgroundThemeResource),
+            typeof(PhotoGalleryViewer),
+            new PropertyMetadata(ItemPanelBackgroundThemeResource.LayerOnMicaBaseAltFillColorDefaultState, OnItemPanelBackgroundThemeChanged)
+        );
+
+    private static void OnItemPanelBackgroundThemeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var viewer = (PhotoGalleryViewer)d;
+        var stateName = e.NewValue.ToString();
+        VisualStateManager.GoToState(viewer, stateName, true);
+    }
 
     public bool IsAddEnabled
     {
