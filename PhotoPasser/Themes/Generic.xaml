@@ -200,7 +200,8 @@
                             <!-- Background Image -->
                             <Image
                                 Stretch="{TemplateBinding ImageStretch}"
-                                Source="{TemplateBinding BackgroundImage}" />
+                                Source="{TemplateBinding BackgroundImage}"
+                                VerticalAlignment="{TemplateBinding ImageVerticalAlignment}"/>
 
                             <!-- Mask -->
                             <Rectangle

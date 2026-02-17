@@ -132,6 +132,20 @@ public sealed class ImageMaskSurface : ContentControl
             typeof(ImageMaskSurface), 
             new PropertyMetadata(Stretch.UniformToFill));
 
+    public VerticalAlignment ImageVerticalAlignment
+    {
+        get { return (VerticalAlignment)GetValue(ImageVerticalAlignmentProperty); }
+        set { SetValue(ImageVerticalAlignmentProperty, value); }
+    }
+
+    // Using a DependencyProperty as the backing store for ImageVerticalAlignment.  This enables animation, styling, binding, etc...
+    public static readonly DependencyProperty ImageVerticalAlignmentProperty =
+        DependencyProperty.Register(
+            nameof(ImageVerticalAlignment), 
+            typeof(VerticalAlignment), 
+            typeof(ImageMaskSurface), 
+            new PropertyMetadata(VerticalAlignment.Top));
+
 
     #endregion
 
