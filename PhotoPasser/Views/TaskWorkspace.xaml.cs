@@ -40,8 +40,6 @@ public sealed partial class TaskWorkspace : Page
 {
     private static TaskWorkspaceViewModel _currentVm;
 
-    public FiltTask FiltTask { get; set; }
-    public TaskDetail Detail { get; set; }
     public TaskWorkspaceViewModel ViewModel { get; set; }
 
     public TaskWorkspace()
@@ -56,10 +54,9 @@ public sealed partial class TaskWorkspace : Page
             task.RecentlyVisitAt = DateTime.Now;
             var _scopedServiceProvider = App.CreateScope().ServiceProvider;
             var _taskDpmService = _scopedServiceProvider.GetRequiredService<ITaskDetailPhysicalManagerService>();
-            FiltTask = task;
-            Detail = await _taskDpmService.InitializeAsync(task);
+            var detail = await _taskDpmService.InitializeAsync(task);
             // 默认选第一个 result
-            ViewModel = new TaskWorkspaceViewModel(task, _taskDpmService, Detail, Detail.Results?.FirstOrDefault() ?? null);
+            ViewModel = new TaskWorkspaceViewModel(task, _taskDpmService, detail, detail.Results?.FirstOrDefault() ?? null);
             await ViewModel.Initialize();
             this.DataContext = ViewModel;
             Bindings.Update();
@@ -84,15 +81,17 @@ public sealed partial class TaskWorkspace : Page
         else
         {
             ViewModel = _currentVm;
-            FiltTask = ViewModel.FiltTask;
-            Detail = ViewModel.Detail;
             this.DataContext = ViewModel;
             Bindings.Update();
-            ResultViewFrame.Navigate(typeof(ResultView), new ResultViewNavigationParameter()
+            if(ViewModel.CurrentResult != null)
             {
-                TaskDpmService = ViewModel.TaskDpmService,
-                NavigatingResult = ViewModel.CurrentResult
-            }, new Microsoft.UI.Xaml.Media.Animation.EntranceNavigationTransitionInfo());
+                ResultViewFrame.Navigate(typeof(ResultView), new ResultViewNavigationParameter()
+                {
+                    TaskDpmService = ViewModel.TaskDpmService,
+                    NavigatingResult = ViewModel.CurrentResult
+                }, new Microsoft.UI.Xaml.Media.Animation.EntranceNavigationTransitionInfo());
+            }
+            
         }
 
         base.OnNavigatedTo(e);

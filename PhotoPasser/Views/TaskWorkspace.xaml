@@ -52,7 +52,7 @@
                     SelectionChanged="NavigationViewer_SelectionChanged" 
                     IsBackButtonVisible="Collapsed" 
                     ExpandedModeThresholdWidth="1350" 
-                    PaneTitle="{x:Bind FiltTask.Name}" 
+                    PaneTitle="{x:Bind ViewModel.FiltTask.Name, Mode=OneWay}" 
                     ItemInvoked="NavigationViewer_ItemInvoked">
         <NavigationView.MenuItems>
             <NavigationViewItem x:Uid="ms-resource:///TaskWorkspace/ResourcesNavigationItem" Icon="Library" Tag="Resources" IsSelected="True"/>
@@ -80,11 +80,22 @@
             <tk:Case Value="Resources">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="120" />
                         <RowDefinition Height="1" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" x:Uid="ms-resource:///TaskWorkspace/ResourcesViewTitle" x:Name="ResTitle" Margin="36,40,36,36" Text="Resources" Style="{ThemeResource TitleTextBlockStyle}"/>
+                    <controls:ImageMaskSurface BackgroundImage="{x:Bind ViewModel.FiltTask.PresentPhoto, Converter={StaticResource UriImageSourceConverter}, Mode=OneWay}"
+                                               ImageStretch="UniformToFill"
+                                               ImageVerticalAlignment="Center"
+                                               AutoMaskColor="True"
+                                               Grid.Row="0">
+                        <controls:ImageMaskSurface.MaskStops>
+                            <controls:MaskStop Offset="0.0" Alpha="255"/>
+                            <controls:MaskStop Offset="1.0" Alpha="200"/>
+                        </controls:ImageMaskSurface.MaskStops>
+                        <TextBlock x:Uid="ms-resource:///TaskWorkspace/ResourcesViewTitle" x:Name="ResTitle" Margin="36,40,36,36" Text="Resources" Style="{ThemeResource TitleTextBlockStyle}"/>
+                    </controls:ImageMaskSurface>
+                    
                     <Border Background="{ThemeResource LayerOnMicaBaseAltFillColorDefaultBrush}"
                             Height="{Binding ActualHeight,ElementName=ResourceOperationBar}"
                             RelativePanel.AlignLeftWithPanel="True"
@@ -105,7 +116,7 @@
                                                  DeleteResolving="PhotoGalleryViewer_DeleteResolving"
                                                  DeleteRequested="PhotoGalleryViewer_DeleteRequested"
                                                  RenameResolve="PhotoGalleryViewer_RenameResolve"
-                                                 Title="{x:Bind FiltTask.Name,Mode=OneWay}"
+                                                 Title="{x:Bind ViewModel.FiltTask.Name,Mode=OneWay}"
                                                  Grid.Row="2"
                                                  x:Name="ResourceView">
                         <controls:PhotoGalleryViewer.ExtendedOperations>

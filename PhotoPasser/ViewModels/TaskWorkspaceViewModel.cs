@@ -96,8 +96,8 @@ public partial class TaskWorkspaceViewModel : ObservableRecipient, IDisposable
     [ObservableProperty]
     private FiltResult _navigatingResult;
 
-    public FiltTask FiltTask { get; }
-    public TaskDetail Detail { get; }
+    public FiltTaskViewModel FiltTask { get; }
+    public TaskDetailViewModel Detail { get; }
 
     public DisplayView CurrentView
     {
@@ -113,9 +113,9 @@ public partial class TaskWorkspaceViewModel : ObservableRecipient, IDisposable
 
     public TaskWorkspaceViewModel(FiltTask task, ITaskDetailPhysicalManagerService service, TaskDetail detail, FiltResult? result = null)
     {
-        FiltTask = task;
+        FiltTask = new(task);
         _taskDpmService = service;
-        Detail = detail;
+        Detail = new(detail);
         CurrentResult = result;
         _workspaceViewManager = service.WorkspaceViewManager;
 
@@ -124,10 +124,10 @@ public partial class TaskWorkspaceViewModel : ObservableRecipient, IDisposable
         _clipboardService = App.GetService<IClipboardService>()!;
         _dialogService = App.GetService<IDialogService>()!;
 
-        _results = new ObservableCollection<FiltResult>(Detail.Results ?? new List<FiltResult>());
+        _results = new ObservableCollection<FiltResult>(Detail.Results ?? new());
         _favoriteResults = new ObservableCollection<FiltResult>(Detail.Results.Where(r => r.IsFavorite));
         _displayedResults = _results;
-        Photos = new ObservableCollection<PhotoInfoViewModel>((Detail.Photos ?? new List<PhotoInfo>()).Select(p => new PhotoInfoViewModel(p)));
+        Photos = new ObservableCollection<PhotoInfoViewModel>((Detail.Photos ?? new()).Select(p => new PhotoInfoViewModel(p)));
 
         WeakReferenceMessenger.Default.Register<FiltResult, string>(this, "AddToFavorite", AddToFavorite);
 
@@ -162,7 +162,7 @@ public partial class TaskWorkspaceViewModel : ObservableRecipient, IDisposable
             }
         });
 
-        WeakReferenceMessenger.Default.Register<FiltingFinishedMessage>(this, (r, m) =>
+        WeakReferenceMessenger.Default.Register<FiltingFinishedMessage>(this, async (r, m) =>
         {
             var resultObj = new FiltResult()
             {
@@ -179,7 +179,7 @@ public partial class TaskWorkspaceViewModel : ObservableRecipient, IDisposable
             DisplayedResults = _results;
             DisplayedResultSelectedIndex = DisplayedResults.IndexOf(NavigatingResult);
             IsFavoriteResultsSelection = false;
-            _taskDpmService.ProcessPhysicalResultAsync(resultObj).ConfigureAwait(false);
+            await _taskDpmService.ProcessPhysicalResultAsync(resultObj).ConfigureAwait(false);
             WeakReferenceMessenger.Default.Send(resultObj, "NavigateToNewResult");
         });
 
@@ -287,7 +287,6 @@ public partial class TaskWorkspaceViewModel : ObservableRecipient, IDisposable
         _taskDpmService.Dispose();
     }
 
-    
     public async Task<(bool Cancel, bool RemovePhysical)> DeleteRequesting()
     {
         var textBlock = new TextBlock
