@@ -84,7 +84,6 @@ public partial class TaskWorkspaceViewModel : ObservableRecipient, IDisposable
     [ObservableProperty]
     private FiltResult? _currentResult;
 
-    private ObservableCollection<FiltResult> _results;
     private ObservableCollection<FiltResult> _favoriteResults;
 
     [ObservableProperty]
@@ -124,9 +123,8 @@ public partial class TaskWorkspaceViewModel : ObservableRecipient, IDisposable
         _clipboardService = App.GetService<IClipboardService>()!;
         _dialogService = App.GetService<IDialogService>()!;
 
-        _results = new ObservableCollection<FiltResult>(Detail.Results ?? new());
         _favoriteResults = new ObservableCollection<FiltResult>(Detail.Results.Where(r => r.IsFavorite));
-        _displayedResults = _results;
+        _displayedResults = Detail.Results;
         Photos = new ObservableCollection<PhotoInfoViewModel>((Detail.Photos ?? new()).Select(p => new PhotoInfoViewModel(p)));
 
         WeakReferenceMessenger.Default.Register<FiltResult, string>(this, "AddToFavorite", AddToFavorite);
@@ -138,7 +136,7 @@ public partial class TaskWorkspaceViewModel : ObservableRecipient, IDisposable
             if (!_favoriteResults.Any() && IsFavoriteResultsSelection)
             {
                 IsFavoriteResultsSelection = false;
-                DisplayedResultSelectedIndex = _results.IndexOf(m);
+                DisplayedResultSelectedIndex = Detail.Results.IndexOf(m);
             }
         });
 
@@ -162,7 +160,7 @@ public partial class TaskWorkspaceViewModel : ObservableRecipient, IDisposable
             }
         });
 
-        WeakReferenceMessenger.Default.Register<FiltingFinishedMessage>(this, async (r, m) =>
+        WeakReferenceMessenger.Default.Register<FiltingFinishedMessage>(this, (r, m) =>
         {
             var resultObj = new FiltResult()
             {
@@ -176,10 +174,9 @@ public partial class TaskWorkspaceViewModel : ObservableRecipient, IDisposable
             };
             Detail.Results.Add(resultObj);
             CurrentResult = resultObj;
-            DisplayedResults = _results;
             DisplayedResultSelectedIndex = DisplayedResults.IndexOf(NavigatingResult);
             IsFavoriteResultsSelection = false;
-            await _taskDpmService.ProcessPhysicalResultAsync(resultObj).ConfigureAwait(false);
+            _taskDpmService.ProcessPhysicalResultAsync(resultObj).ConfigureAwait(false);
             WeakReferenceMessenger.Default.Send(resultObj, "NavigateToNewResult");
         });
 
@@ -198,7 +195,7 @@ public partial class TaskWorkspaceViewModel : ObservableRecipient, IDisposable
         {
             if (CurrentResult != null)
                 NavigatingResult = CurrentResult;
-            DisplayedResults = !IsFavoriteResultsSelection ? _favoriteResults : _results;
+            DisplayedResults = !IsFavoriteResultsSelection ? _favoriteResults : Detail.Results;
             DisplayedResultSelectedIndex = DisplayedResults.IndexOf(NavigatingResult);
         }
     }

@@ -227,10 +227,3 @@ public sealed partial class ProcessingPage : Page
         App.GetService<MainWindow>()!.Frame.GoBack();
     }
 }
-
-internal class FiltingFinishedMessage
-{
-    public List<PhotoInfo> FiltedPhotos { get; set; }
-    public string Name { get; set; }
-    public string Description { get; set; }
-}
