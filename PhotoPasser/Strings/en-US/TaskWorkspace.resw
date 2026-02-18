@@ -117,7 +117,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-    <data name="AllResultsSelectedItem.Text" xml:space="preserve">
+  <data name="AllResultsSelectedItem.Text" xml:space="preserve">
     <value>All Results</value>
   </data>
   <data name="CopySourceProperty.Header" xml:space="preserve">
@@ -135,25 +135,25 @@
   <data name="FilterBasedOnSelectedOperation.OperationName" xml:space="preserve">
     <value>Filter based on selected</value>
   </data>
-  <data name="HomeNavigationItem.Content" xml:space="preserve">
+  <data name="HomeNavigationItemHeader.Text" xml:space="preserve">
     <value>Home</value>
   </data>
   <data name="NameProperty.Header" xml:space="preserve">
     <value>Name</value>
   </data>
-  <data name="PropertiesNavigationItem.Content" xml:space="preserve">
+  <data name="PropertiesNavigationItemHeader.Text" xml:space="preserve">
     <value>Properties</value>
   </data>
   <data name="PropertiesViewTitle.Text" xml:space="preserve">
     <value>Properties</value>
   </data>
-  <data name="ResourcesNavigationItem.Content" xml:space="preserve">
+  <data name="ResourcesNavigationItemHeader.Text" xml:space="preserve">
     <value>Resources</value>
   </data>
   <data name="ResourcesViewTitle.Text" xml:space="preserve">
     <value>Resource</value>
   </data>
-  <data name="ResultsNavigationItem.Content" xml:space="preserve">
+  <data name="ResultsNavigationItemHeader.Text" xml:space="preserve">
     <value>Results</value>
   </data>
   <data name="ResultsViewTitle.Text" xml:space="preserve">
@@ -162,7 +162,7 @@
   <data name="SelectToPresentOperation.OperationName" xml:space="preserve">
     <value>Select to present</value>
   </data>
-  <data name="StartFilteringNavigationItem.Content" xml:space="preserve">
+  <data name="StartFilteringNavigationItemHeader.Text" xml:space="preserve">
     <value>Start Filtering</value>
   </data>
   <data name="NoResultsTip.Text" xml:space="preserve">

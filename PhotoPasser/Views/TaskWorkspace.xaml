@@ -15,7 +15,7 @@
     xmlns:sys="clr-namespace=System;assembly=mscorlib"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:behaviors="using:PhotoPasser.Behaviors"
-    xmlns:p="using:PhotoPasser.Primitive"
+    xmlns:p="using:PhotoPasser.Primitive" xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
     mc:Ignorable="d">
     <Page.Resources>
         <conv:UriImageSourceConverter x:Key="UriImageSourceConverter"/>
@@ -48,28 +48,35 @@
                                        FalseObject="Disabled"/>
     </Page.Resources>
     <NavigationView x:Name="NavigationViewer" 
+                    Style="{StaticResource StoreNavigationiewStyle}"
                     IsSettingsVisible="false" 
                     SelectionChanged="NavigationViewer_SelectionChanged" 
                     IsBackButtonVisible="Collapsed" 
-                    ExpandedModeThresholdWidth="1350" 
-                    PaneTitle="{x:Bind ViewModel.FiltTask.Name, Mode=OneWay}" 
                     ItemInvoked="NavigationViewer_ItemInvoked">
         <NavigationView.MenuItems>
-            <NavigationViewItem x:Uid="ms-resource:///TaskWorkspace/ResourcesNavigationItem" Icon="Library" Tag="Resources" IsSelected="True"/>
-            <NavigationViewItem x:Uid="ms-resource:///TaskWorkspace/ResultsNavigationItem" Tag="Results">
+            <NavigationViewItem Icon="Library" Tag="Resources" IsSelected="True">
+                <TextBlock x:Uid="ms-resource:///TaskWorkspace/ResourcesNavigationItemHeader" Style="{ThemeResource CaptionTextBlockStyle}"/>
+            </NavigationViewItem>
+            <NavigationViewItem Tag="Results">
                 <NavigationViewItem.Icon>
                     <FontIcon Glyph="&#xF168;" />
                 </NavigationViewItem.Icon>
+                <TextBlock x:Uid="ms-resource:///TaskWorkspace/ResultsNavigationItemHeader" Style="{ThemeResource CaptionTextBlockStyle}"/>
             </NavigationViewItem>
-            <NavigationViewItem x:Uid="ms-resource:///TaskWorkspace/PropertiesNavigationItem" Tag="Properties">
+            <NavigationViewItem Tag="Properties">
                 <NavigationViewItem.Icon>
                     <FontIcon Glyph="&#xE946;" />
                 </NavigationViewItem.Icon>
+                <TextBlock x:Uid="ms-resource:///TaskWorkspace/PropertiesNavigationItemHeader" Style="{ThemeResource CaptionTextBlockStyle}"/>
             </NavigationViewItem>
         </NavigationView.MenuItems>
         <NavigationView.FooterMenuItems>
-            <NavigationViewItem x:Uid="ms-resource:///TaskWorkspace/HomeNavigationItem" Icon="Home" Tag="Home" SelectsOnInvoked="True"/>
-            <NavigationViewItem x:Uid="ms-resource:///TaskWorkspace/StartFilteringNavigationItem" Icon="Play" Tag="StartFiltering" SelectsOnInvoked="True"/>
+            <NavigationViewItem Icon="Home" Tag="Home" SelectsOnInvoked="True">
+                <TextBlock x:Uid="ms-resource:///TaskWorkspace/HomeNavigationItemHeader" Style="{ThemeResource CaptionTextBlockStyle}"/>
+            </NavigationViewItem>
+            <NavigationViewItem Icon="Play" Tag="StartFiltering" SelectsOnInvoked="True">
+                <TextBlock x:Uid="ms-resource:///TaskWorkspace/StartFilteringNavigationItemHeader" Style="{ThemeResource CaptionTextBlockStyle}"/>
+            </NavigationViewItem>
         </NavigationView.FooterMenuItems>
         <tk:SwitchPresenter Grid.Row="1" Value="{Binding SelectedItem.Tag,ElementName=NavigationViewer}">
             <tk:SwitchPresenter.ContentTransitions>
