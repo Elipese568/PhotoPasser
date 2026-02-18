@@ -113,4 +113,24 @@ public class SettingProvider : ObservableObject
             OnPropertyChanged();
         }
     }
+
+    public TaskSortBy TaskSortBy
+    {
+        get => (TaskSortBy)GetSetting<int>(nameof(TaskSortBy), (int)TaskSortBy.CreateAt);
+        set
+        {
+            SetSetting(nameof(TaskSortBy), (int)value);
+            OnPropertyChanged();
+        }
+    }
+
+    public SortOrder TaskSortOrder
+    {
+        get => (SortOrder)GetSetting<int>(nameof(TaskSortOrder), (int)SortOrder.Descending);
+        set
+        {
+            SetSetting(nameof(TaskSortOrder), (int)value);
+            OnPropertyChanged();
+        }
+    }
 }

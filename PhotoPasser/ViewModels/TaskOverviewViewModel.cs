@@ -7,6 +7,7 @@ using PhotoPasser.Dialog;
 using PhotoPasser.Models;
 using PhotoPasser.Primitive;
 using PhotoPasser.Service;
+using PhotoPasser.Sorting;
 using PhotoPasser.Strings;
 using PhotoPasser.Helper;
 using System;
@@ -19,15 +20,47 @@ namespace PhotoPasser.ViewModels;
 public sealed partial class TaskOverviewViewModel : ObservableObject
 {
     private readonly ITaskItemProviderService _taskItemService;
+    private readonly ISorterService _sorter;
+    private readonly TaskSorter _taskSorter;
 
-    public ObservableCollection<FiltTask> Tasks;
+    private ObservableCollection<FiltTask> _originalTasks;
+
+    [ObservableProperty]
+    private ObservableCollection<FiltTask> _tasks;
+
+    [ObservableProperty]
+    private TaskSortBy _currentSortBy;
+
+    [ObservableProperty]
+    private SortOrder _currentSortOrder;
+
+    /// <summary>
+    /// 可用的排序字段选项
+    /// </summary>
+    public TaskSortBy[] SortByOptions => Enum.GetValues<TaskSortBy>();
 
     public TaskOverviewViewModel()
     {
         _taskItemService = App.GetService<ITaskItemProviderService>();
+        _sorter = App.GetService<ISorterService>();
+        _taskSorter = new TaskSorter(_sorter);
+
+        // 从 SettingProvider 加载保存的排序配置
+        LoadSortSettings();
+
         _taskItemService.TasksChanged += TasksChanged;
 
-        Tasks = new(_taskItemService.GetAllTasks() ?? []);
+        _originalTasks = new(_taskItemService.GetAllTasks() ?? []);
+        Tasks = ApplySorting(_originalTasks);
+    }
+
+    /// <summary>
+    /// 从持久化存储加载排序设置
+    /// </summary>
+    private void LoadSortSettings()
+    {
+        CurrentSortBy = SettingProvider.Instance.TaskSortBy;
+        CurrentSortOrder = SettingProvider.Instance.TaskSortOrder;
     }
 
     private void TasksChanged(object? sender, TaskChangedEventArgs e)
@@ -35,23 +68,59 @@ public sealed partial class TaskOverviewViewModel : ObservableObject
         switch (e.TypeOfChange)
         {
             case ChangeType.Added:
-                Tasks.Add(e.Task);
+                _originalTasks.Add(e.Task);
                 break;
             case ChangeType.Updated:
-                int idx = Tasks.IndexOf(Tasks.First(x => x.Id == e.Task.Id));
+                int idx = _originalTasks.IndexOf(_originalTasks.First(x => x.Id == e.Task.Id));
                 if (idx >= 0)
                 {
-                    Tasks[idx] = e.Task;
+                    _originalTasks[idx] = e.Task;
                 }
                 break;
             case ChangeType.Deleted:
-                var taskToRemove = Tasks.FirstOrDefault(x => x.Id == e.Task.Id);
+                var taskToRemove = _originalTasks.FirstOrDefault(x => x.Id == e.Task.Id);
                 if (taskToRemove != null)
                 {
-                    Tasks.Remove(taskToRemove);
+                    _originalTasks.Remove(taskToRemove);
                 }
                 break;
         }
+
+        Tasks = ApplySorting(_originalTasks);
+    }
+
+    private ObservableCollection<FiltTask> ApplySorting(ObservableCollection<FiltTask> source)
+    {
+        return _taskSorter.Sort(source, CurrentSortBy, CurrentSortOrder);
+    }
+
+    /// <summary>
+    /// 排序字段变更时：重新排序并保存设置
+    /// </summary>
+    partial void OnCurrentSortByChanged(TaskSortBy value)
+    {
+        Tasks = ApplySorting(_originalTasks);
+        SettingProvider.Instance.TaskSortBy = value;
+    }
+
+    /// <summary>
+    /// 排序方向变更时：重新排序并保存设置
+    /// </summary>
+    partial void OnCurrentSortOrderChanged(SortOrder value)
+    {
+        Tasks = ApplySorting(_originalTasks);
+        SettingProvider.Instance.TaskSortOrder = value;
+    }
+
+    /// <summary>
+    /// 切换排序方向（便捷方法）
+    /// </summary>
+    [RelayCommand]
+    public void ToggleSortDirection()
+    {
+        CurrentSortOrder = CurrentSortOrder == SortOrder.Ascending
+            ? SortOrder.Descending
+            : SortOrder.Ascending;
     }
 
     [RelayCommand]

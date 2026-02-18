@@ -23,6 +23,7 @@ using PhotoPasser.Helper;
 using PhotoPasser.Service;
 using PhotoPasser.Service.Mock;
 using PhotoPasser.Service.Primitive;
+using PhotoPasser.Sorting;
 using PhotoPasser.Views;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
@@ -72,8 +73,31 @@ namespace PhotoPasser
 #endif
                             services.AddTransient<IDialogService, DialogService>();
                             services.AddTransient<IClipboardService, ClipboardService>();
+
+                            // 注册排序器服务
+                            services.AddSingleton<ISorterService>(serviceProvider =>
+                            {
+                                var sorter = new SorterService();
+
+                                // 注册任务排序规则
+                                sorter.RegisterRule(new TaskSortRules.NameRule());
+                                sorter.RegisterRule(new TaskSortRules.DescriptionRule());
+                                sorter.RegisterRule(new TaskSortRules.CreateAtRule());
+                                sorter.RegisterRule(new TaskSortRules.RecentlyVisitAtRule());
+
+                                // 注册照片排序规则
+                                sorter.RegisterRule(new PhotoSortRules.NameRule());
+                                sorter.RegisterRule(new PhotoSortRules.TypeRule());
+                                sorter.RegisterRule(new PhotoSortRules.DateCreatedRule());
+                                sorter.RegisterRule(new PhotoSortRules.DateModifiedRule());
+                                sorter.RegisterRule(new PhotoSortRules.TotalSizeRule());
+
+                                return sorter;
+                            });
+
                             services.AddSingleton<TaskOverview>()
                                     .AddSingleton<TaskOverviewViewModel>();
+                            services.AddSingleton<PhotoSorter>();
                             services.AddSingleton<MainWindow>();
                         })
                         .Build();

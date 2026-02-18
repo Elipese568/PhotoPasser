@@ -36,8 +36,8 @@ public partial class PhotoInfoViewModel : ObservableObject
         }
     }
 
-    public DateTime DateCreated { get; set; }
-    public DateTime DateModified { get; set; }
+    public DateTime DateCreated => Model.DateCreated;
+    public DateTime DateModified => Model.DateModified;
 
     public PhotoInfoViewModel(PhotoInfo model)
     {
@@ -60,8 +60,6 @@ public partial class PhotoInfoViewModel : ObservableObject
     {
         return new PhotoInfoViewModel(model)
         {
-            DateCreated = info.CreationTime,
-            DateModified = info.LastWriteTime
         };
     }
 }

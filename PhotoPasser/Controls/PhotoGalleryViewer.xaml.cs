@@ -13,6 +13,7 @@ using PhotoPasser.Converters;
 using PhotoPasser.Helper;
 using PhotoPasser.Primitive;
 using PhotoPasser.Service;
+using PhotoPasser.Sorting;
 using PhotoPasser.Strings;
 using System;
 using System.Collections.Generic;
@@ -191,6 +192,7 @@ public class PhotoGeneralOperation : DependencyObject, IPhotoViewerOperation
 [ObservableObject]
 public sealed partial class PhotoGalleryViewer : UserControl
 {
+    private readonly PhotoSorter _photoSorter;
     private readonly IClipboardService _clipboardService;
     private readonly IDialogService _dialogService;
 
@@ -199,6 +201,7 @@ public sealed partial class PhotoGalleryViewer : UserControl
 
     public PhotoGalleryViewer()
     {
+        _photoSorter = App.GetService<PhotoSorter>();
         _clipboardService = App.GetService<IClipboardService>();
         _dialogService = App.GetService<IDialogService>();
         InitializeComponent();
@@ -502,19 +505,10 @@ public sealed partial class PhotoGalleryViewer : UserControl
         else
             result = origin;
 
-        if (result == null) return result;
-        IEnumerable<PhotoInfoViewModel>? ordered = result;
+        if (result == null || !result.Any())
+            return result;
 
-        ordered = sortBy switch
-        {
-            SortBy.Name => order == SortOrder.Ascending ? result.OrderBy(x => x.UserName) : result.OrderByDescending(x => x.UserName),
-            SortBy.Type => order == SortOrder.Ascending ? result.OrderBy(x => x.UserName.Split('.')[^1]) : result.OrderByDescending(x => x.UserName.Split('.')[^1]),
-            SortBy.DateCreated => order == SortOrder.Ascending ? result.OrderBy(x => x.DateCreated) : result.OrderByDescending(x => x.DateCreated),
-            SortBy.DateModified => order == SortOrder.Ascending ? result.OrderBy(x => x.DateModified) : result.OrderByDescending(x => x.DateModified),
-            SortBy.TotalSize => order == SortOrder.Ascending ? result.OrderBy(x => x.Size) : result.OrderByDescending(x => x.Size),
-            _ => result,
-        };
-        return new ObservableCollection<PhotoInfoViewModel>(ordered);
+        return _photoSorter.Sort(result, sortBy, order);
     }
 
     public string GetQueryPlaceHolderText(string taskName)
