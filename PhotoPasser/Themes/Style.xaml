@@ -36,7 +36,7 @@
     <x:String x:Key="EmptyTaskItemPresentPhotoPath">ms-appx:///Assets/LibraryItem/Empty.png</x:String>
 
     <Style TargetType="NavigationViewItem" x:Key="StoreNavigationViewItem">
-        <Setter Property="Foreground" Value="{ThemeResource NavigationViewItemForeground}" />
+        <Setter Property="Foreground" Value="{ThemeResource NavigationViewItemForegroundPressed}" /> <!-- No taking the leading position -->
         <Setter Property="Background" Value="{ThemeResource NavigationViewItemBackground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource NavigationViewItemBorderBrush}" />
         <Setter Property="BorderThickness" Value="{StaticResource NavigationViewItemBorderThickness}" />
@@ -59,7 +59,6 @@
                                         <Setter Target="Icon.Foreground" Value="{ThemeResource NavigationViewItemForegroundPointerOver}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource NavigationViewItemForegroundPointerOver}" />
                                         <Setter Target="Icon.(AnimatedIcon.State)" Value="PointerOver" />
-
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -231,9 +230,9 @@
                         <Grid x:Name="PresenterContentRootGrid" Height="64" Width="64">
                             <!-- Wrap SelectionIndicator in a grid so that its offset is 0,0 - this enables the offset animation. -->
                             <Grid HorizontalAlignment="Left" VerticalAlignment="Center">
-                                <Rectangle x:Name="SelectionIndicator" Width="{ThemeResource NavigationViewSelectionIndicatorWidth}" Height="{ThemeResource NavigationViewSelectionIndicatorHeight}" Fill="{ThemeResource NavigationViewSelectionIndicatorForeground}" Opacity="0.0" RadiusX="{ThemeResource NavigationViewSelectionIndicatorRadius}" RadiusY="{ThemeResource NavigationViewSelectionIndicatorRadius}" />
+                                <Rectangle x:Name="SelectionIndicator" Width="{ThemeResource NavigationViewSelectionIndicatorWidth}" Height="24" Fill="{ThemeResource NavigationViewSelectionIndicatorForeground}" Opacity="0.0" RadiusX="{ThemeResource NavigationViewSelectionIndicatorRadius}" RadiusY="{ThemeResource NavigationViewSelectionIndicatorRadius}" />
                             </Grid>
-                            <Grid x:Name="ContentGrid" Margin="0,0,0,0" HorizontalAlignment="Center" VerticalAlignment="Center" RowSpacing="6">
+                            <Grid x:Name="ContentGrid" Margin="0,0,0,0" HorizontalAlignment="Center" VerticalAlignment="Center" RowSpacing="8">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
@@ -243,7 +242,7 @@
                                         <ContentPresenter x:Name="Icon" Content="{TemplateBinding Icon}" Foreground="{TemplateBinding Foreground}" Background="{ThemeResource NavigationViewItemIconBackground}" local:AnimatedIcon.State="Normal" xmlns:local="using:Microsoft.UI.Xaml.Controls" />
                                     </Viewbox>
                                 </Border>
-                                <ContentPresenter x:Name="ContentPresenter" Grid.Row="1" Margin="1,0" ContentTransitions="{TemplateBinding ContentTransitions}" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" Foreground="{TemplateBinding Foreground}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}" Padding="{TemplateBinding Padding}" AutomationProperties.AccessibilityView="Raw" />
+                                <ContentPresenter x:Name="ContentPresenter" Grid.Row="1" Margin="1,0" ContentTransitions="{TemplateBinding ContentTransitions}" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" Foreground="{TemplateBinding Foreground}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}" Padding="{TemplateBinding Padding}" FontSize="10" AutomationProperties.AccessibilityView="Raw" />
                             </Grid>
                         </Grid>
                     </Grid>
