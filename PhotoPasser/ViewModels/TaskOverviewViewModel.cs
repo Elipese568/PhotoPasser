@@ -34,6 +34,9 @@ public sealed partial class TaskOverviewViewModel : ObservableObject
     [ObservableProperty]
     private SortOrder _currentSortOrder;
 
+    [ObservableProperty]
+    private TaskViewType _currentViewType;
+
     /// <summary>
     /// 可用的排序字段选项
     /// </summary>
@@ -47,6 +50,9 @@ public sealed partial class TaskOverviewViewModel : ObservableObject
 
         // 从 SettingProvider 加载保存的排序配置
         LoadSortSettings();
+
+        // 加载保存的视图类型
+        CurrentViewType = SettingProvider.Instance.TaskViewType;
 
         _taskItemService.TasksChanged += TasksChanged;
 
@@ -86,8 +92,10 @@ public sealed partial class TaskOverviewViewModel : ObservableObject
                 break;
         }
 
-        Tasks = ApplySorting(_originalTasks);
+        UpdateTaskList();
     }
+
+    public void UpdateTaskList() => Tasks = ApplySorting(_originalTasks);
 
     private ObservableCollection<FiltTask> ApplySorting(ObservableCollection<FiltTask> source)
     {
@@ -110,6 +118,11 @@ public sealed partial class TaskOverviewViewModel : ObservableObject
     {
         Tasks = ApplySorting(_originalTasks);
         SettingProvider.Instance.TaskSortOrder = value;
+    }
+
+    partial void OnCurrentViewTypeChanged(TaskViewType value)
+    {
+        SettingProvider.Instance.TaskViewType = value;
     }
 
     /// <summary>

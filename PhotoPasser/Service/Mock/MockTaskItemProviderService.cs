@@ -9,39 +9,48 @@ namespace PhotoPasser.Service.Mock;
 
 public class MockTaskItemProviderService : ITaskItemProviderService
 {
-    private List<FiltTask> _tasks = [
-        new FiltTask 
-        { 
-            Id = Guid.NewGuid(), 
-            Name = "Task 1", 
+    private static FiltTask[] _mockChoices = [
+        new FiltTask
+        {
+            Id = Guid.NewGuid(),
+            Name = "Task 1",
             CreateAt = DateTime.Now.AddDays(-2),
             RecentlyVisitAt = DateTime.Now,
-            Description = "Description 1", 
-            PresentPhoto = "ms-appx:///Assets/StoreLogo.png", 
-            DestinationPath = Path.GetTempPath() 
+            Description = "Description 1",
+            PresentPhoto = "ms-appx:///Assets/StoreLogo.png",
+            DestinationPath = Path.GetTempPath()
         },
-        new FiltTask 
-        { 
-            Id = Guid.NewGuid(), 
-            Name = "Task 2", 
+        new FiltTask
+        {
+            Id = Guid.NewGuid(),
+            Name = "Task 2",
             CreateAt = DateTime.Now.AddDays(-3),
             RecentlyVisitAt = DateTime.Now.AddDays(-1),
-            Description = "Looooooooooooooo oooooooooooo oooooooooooo nggggggggg Description 2", 
-            PresentPhoto = "ms-appx:///Assets/StoreLogo.png", 
-            DestinationPath = Path.GetTempPath() 
+            Description = "Looooooooooooooo oooooooooooo oooooooooooo nggggggggg Description 2",
+            PresentPhoto = "ms-appx:///Assets/StoreLogo.png",
+            DestinationPath = Path.GetTempPath()
         },
-        new FiltTask 
-        { 
-            Id = Guid.NewGuid(), 
-            Name = "Task 3", 
+        new FiltTask
+        {
+            Id = Guid.NewGuid(),
+            Name = "Task 3",
             CreateAt = DateTime.Now.AddDays(-3),
             RecentlyVisitAt = DateTime.Now.AddDays(-2),
-            Description = "", 
-            PresentPhoto = "ms-appx:///Assets/StoreLogo.png", 
-            DestinationPath = Path.GetTempPath() 
-        },
-
+            Description = "",
+            PresentPhoto = "ms-appx:///Assets/StoreLogo.png",
+            DestinationPath = Path.GetTempPath()
+        }
     ];
+    private List<FiltTask> _tasks = Enumerable.Range(0, 100).Select(_ => Random.Shared.GetItems(_mockChoices, 1)[0].Let(x => new FiltTask()
+    {
+        Id = Guid.NewGuid(),
+        Name = x.Name,
+        CreateAt = x.CreateAt,
+        RecentlyVisitAt = x.RecentlyVisitAt,
+        Description = x.Description,
+        PresentPhoto = Random.Shared.GetItems(MockTaskDetailPhysicalManagerService.MockPicturePath, 1)[0],
+        DestinationPath = x.DestinationPath
+    })).ToList();
 
     public event EventHandler<TaskChangedEventArgs> TasksChanged;
 

@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+Ôªøusing CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
@@ -23,6 +23,7 @@ using Windows.Storage.Streams;
 using Windows.System;
 using PhotoPasser.Models;
 using PhotoPasser.Primitive;
+using System.Drawing.Printing;
 
 namespace PhotoPasser.ViewModels;
 
@@ -52,12 +53,12 @@ public partial class TaskWorkspaceViewModel : ObservableRecipient, IDisposable
             _workspaceStateCache.SortBy = (PhotoPasser.Primitive.SortBy)value;
             DebouncedSaveWorkspaceState();
         }
-        }
+    }
 
     private ObservableCollection<PhotoInfoViewModel> _photos;
     public ObservableCollection<PhotoInfoViewModel> Photos
     {
-        get => _photos; 
+        get => _photos;
         set
         {
             if (_photos == value) return;
@@ -81,19 +82,16 @@ public partial class TaskWorkspaceViewModel : ObservableRecipient, IDisposable
     [ObservableProperty]
     private ObservableCollection<PhotoInfoViewModel> _searchResult = new EmptyPhotoCollection();
 
-    [ObservableProperty]
-    private FiltResult? _currentResult;
-
-    private ObservableCollection<FiltResult> _favoriteResults;
+    private ObservableCollection<FiltResultViewModel> _favoriteResults;
 
     [ObservableProperty]
-    private ObservableCollection<FiltResult> _displayedResults;
+    private ObservableCollection<FiltResultViewModel> _displayedResults;
     [ObservableProperty]
     private int _displayedResultSelectedIndex;
     [ObservableProperty]
     private bool _isFavoriteResultsSelection;
-    [ObservableProperty]
-    private FiltResult _navigatingResult;
+
+    public FiltResultViewModel CurrentResultViewModel { get; set; }
 
     public FiltTaskViewModel FiltTask { get; }
     public TaskDetailViewModel Detail { get; }
@@ -115,88 +113,175 @@ public partial class TaskWorkspaceViewModel : ObservableRecipient, IDisposable
         FiltTask = new(task);
         _taskDpmService = service;
         Detail = new(detail);
-        CurrentResult = result;
         _workspaceViewManager = service.WorkspaceViewManager;
-
 
         // try resolve clipboard service from root provider (scoped provider not available here)
         _clipboardService = App.GetService<IClipboardService>()!;
         _dialogService = App.GetService<IDialogService>()!;
 
-        _favoriteResults = new ObservableCollection<FiltResult>(Detail.Results.Where(r => r.IsFavorite));
-        _displayedResults = Detail.Results;
-        Photos = new ObservableCollection<PhotoInfoViewModel>((Detail.Photos ?? new()).Select(p => new PhotoInfoViewModel(p)));
+        // ÂàõÂª∫ FiltResultViewModel ÈõÜÂêà
+        _favoriteResults = new ObservableCollection<FiltResultViewModel>(Detail.Results.Where(r => r.IsFavorite).Select(r => new FiltResultViewModel(r)));
 
-        WeakReferenceMessenger.Default.Register<FiltResult, string>(this, "AddToFavorite", AddToFavorite);
+        // Initialize displayed collection by explicitly requesting data source for default mode (show all)
+        _displayedResults = ProvideAllResults();
 
-        WeakReferenceMessenger.Default.Register<FiltResult, string>(this, "RemoveFromFavorite", (r, m) =>
-        {
-            m.IsFavorite = false;
-            _favoriteResults.Remove(m);
-            if (!_favoriteResults.Any() && IsFavoriteResultsSelection)
-            {
-                IsFavoriteResultsSelection = false;
-                DisplayedResultSelectedIndex = Detail.Results.IndexOf(m);
-            }
-        });
+        Photos = new ObservableCollection<PhotoInfoViewModel>((Detail.Photos ?? Enumerable.Empty<PhotoInfo>()).Select(p => new PhotoInfoViewModel(p)));
 
-        WeakReferenceMessenger.Default.Register<FiltResult, string>(this, "DeleteResult", (r, m) =>
-        {
-            Detail.Results.Remove(m);
-            _favoriteResults.Remove(m);
-            if (_currentResult == m || _navigatingResult == m)
-            {
-                if (_displayedResults.FirstOrDefault() is FiltResult next)
-                {
-                    CurrentResult = next;
-                    NavigatingResult = next;
-                }
-                else
-                {
-                    CurrentResult = null;
-                    NavigatingResult = null;
-                    WeakReferenceMessenger.Default.Send("NoResultAvaliable", "NoResultAvaliable");
-                }
-            }
-        });
-
-        WeakReferenceMessenger.Default.Register<FiltingFinishedMessage>(this, (r, m) =>
-        {
-            var resultObj = new FiltResult()
-            {
-                Date = DateTime.Now,
-                Description = m.Description,
-                Name = m.Name,
-                Photos = m.FiltedPhotos ?? new List<PhotoInfo>(),
-                PinnedPhotos = new List<PhotoInfo>(),
-                IsFavorite = false,
-                ResultId = Guid.NewGuid()
-            };
-            Detail.Results.Add(resultObj);
-            CurrentResult = resultObj;
-            DisplayedResultSelectedIndex = DisplayedResults.IndexOf(NavigatingResult);
-            IsFavoriteResultsSelection = false;
-            _taskDpmService.ProcessPhysicalResultAsync(resultObj).ConfigureAwait(false);
-            WeakReferenceMessenger.Default.Send(resultObj, "NavigateToNewResult");
-        });
+        WeakReferenceMessenger.Default.Register<FiltResultViewModel, string>(this, "AddToFavorite", AddToFavorite);
+        WeakReferenceMessenger.Default.Register<FiltResultViewModel, string>(this, "RemoveFromFavorite", HandleRemoveFromFavorite);
+        WeakReferenceMessenger.Default.Register<FiltResultViewModel, string>(this, "DeleteResult", HandleDeleteResult);
+        WeakReferenceMessenger.Default.Register<FiltingFinishedMessage>(this, HandleFiltingFinished);
 
         PropertyChanging += TaskWorkspaceViewModel_PropertyChanging;
+
+        CurrentResultViewModel = ProvideAllResults()[0];
     }
 
-    private void AddToFavorite(object r, FiltResult m)
+    private void AddToFavorite(object r, FiltResultViewModel m)
     {
         m.IsFavorite = true;
         _favoriteResults.Add(m);
     }
 
+    #region Message Handlers
+
+    private void HandleRemoveFromFavorite(object recipient, FiltResultViewModel result)
+    {
+        result.IsFavorite = false;
+        _favoriteResults.Remove(result);
+
+        // If currently showing favorites and no favorites remain, switch to all results
+        if (!_favoriteResults.Any() && IsFavoriteResultsSelection)
+        {
+            IsFavoriteResultsSelection = false;  // This triggers PropertyChanging -> SwitchDisplayMode
+            int index = _displayedResults.IndexOf(result);
+            DisplayedResultSelectedIndex = index >= 0 ? index : 0;
+        }
+    }
+
+    private void HandleDeleteResult(object recipient, FiltResultViewModel result)
+    {
+        // Remove from model
+        Detail.Results.Remove(result.Model);
+
+        // Remove from ViewModel collections
+        _favoriteResults.Remove(result);
+        _displayedResults.Remove(result);
+
+        // Update selection if current result was deleted
+        int deletedIndex = _displayedResults.IndexOf(result);
+        if (deletedIndex == DisplayedResultSelectedIndex)
+        {
+            UpdateResultSelectionAfterDeletion();
+        }
+        else if (deletedIndex < DisplayedResultSelectedIndex)
+        {
+            // Adjust index if deleted item was before selected item
+            DisplayedResultSelectedIndex--;
+        }
+    }
+
+    private void UpdateResultSelectionAfterDeletion()
+    {
+        if (_displayedResults.Any())
+        {
+            DisplayedResultSelectedIndex = 0;
+        }
+        else
+        {
+            DisplayedResultSelectedIndex = -1;
+            WeakReferenceMessenger.Default.Send("NoResultAvaliable", "NoResultAvaliable");
+        }
+    }
+
+    private void HandleFiltingFinished(object recipient, FiltingFinishedMessage message)
+    {
+        // Create new result model
+        var resultModel = CreateResultModelFromMessage(message);
+
+        // Add to model and ViewModel collections
+        Detail.Results.Add(resultModel);
+        var resultViewModel = new FiltResultViewModel(resultModel);
+        _displayedResults.Add(resultViewModel);
+
+        // Select new result and switch to all results view
+        DisplayedResultSelectedIndex = _displayedResults.Count - 1;
+        IsFavoriteResultsSelection = false;  // Triggers PropertyChanging -> SwitchDisplayMode
+
+        // Process physically
+        _taskDpmService.ProcessPhysicalResultAsync(resultModel).ConfigureAwait(false);
+        WeakReferenceMessenger.Default.Send(resultViewModel, "NavigateToNewResult");
+    }
+
+    private FiltResult CreateResultModelFromMessage(FiltingFinishedMessage message)
+    {
+        return new FiltResult()
+        {
+            Date = DateTime.Now,
+            Description = message.Description,
+            Name = message.Name,
+            Photos = message.FiltedPhotos ?? new List<PhotoInfo>(),
+            PinnedPhotos = new List<PhotoInfo>(),
+            IsFavorite = false,
+            ResultId = Guid.NewGuid()
+        };
+    }
+
+    #endregion
+
+    #region Data Source Provision
+
+    /// <summary>
+    /// Provides all results as ViewModel collection
+    /// Data source: Detail.Results (Model) -> ViewModel collection
+    /// </summary>
+    private ObservableCollection<FiltResultViewModel> ProvideAllResults()
+    {
+        return new ObservableCollection<FiltResultViewModel>(
+            Detail.Results.Select(r => new FiltResultViewModel(r))
+        );
+    }
+
+    /// <summary>
+    /// Provides favorite results as ViewModel collection
+    /// Data source: _favoriteResults (already cached ViewModel collection)
+    /// </summary>
+    private ObservableCollection<FiltResultViewModel> ProvideFavoriteResults()
+    {
+        return _favoriteResults;
+    }
+
+    #endregion
+
+    /// <summary>
+    /// Handles property changing events to switch display mode.
+    /// Uses PropertyChanging to intercept the change before it happens,
+    /// allowing us to determine the target mode from the current value.
+    ///
+    /// Logic: !IsFavoriteResultsSelection gives the target mode (new value)
+    /// because PropertyChanging fires before the value changes.
+    ///
+    /// Selection Logic:
+    ///   If current index is valid -> try to find same result in new collection
+    ///   If not found -> set index to -1 (no selection)
+    /// </summary>
     private void TaskWorkspaceViewModel_PropertyChanging(object? sender, System.ComponentModel.PropertyChangingEventArgs e)
     {
         if (e.PropertyName == nameof(IsFavoriteResultsSelection))
         {
-            if (CurrentResult != null)
-                NavigatingResult = CurrentResult;
-            DisplayedResults = !IsFavoriteResultsSelection ? _favoriteResults : Detail.Results;
-            DisplayedResultSelectedIndex = DisplayedResults.IndexOf(NavigatingResult);
+            // Preserve current selection in local variable
+            var preservedResult = /*_displayedResults.Count > DisplayedResultSelectedIndex && DisplayedResultSelectedIndex >= 0
+                ? _displayedResults[DisplayedResultSelectedIndex]
+                : null;*/ CurrentResultViewModel;
+
+            // Determine target mode and switch collection
+            // !IsFavoriteResultsSelection = target (new) value because PropertyChanging fires before change
+            DisplayedResults = !IsFavoriteResultsSelection ? ProvideFavoriteResults() : ProvideAllResults();
+
+            // Restore selection:
+            // - If new collection has same result -> select its index
+            // - If not found -> set index to -1 (no selection)
+            DisplayedResultSelectedIndex = preservedResult != null ? DisplayedResults.IndexOf(preservedResult) : -1;
         }
     }
 
@@ -278,7 +363,7 @@ public partial class TaskWorkspaceViewModel : ObservableRecipient, IDisposable
             FiltTask.PresentPhoto = photoInfo.Path;
         }
     }
-    
+
     public void Dispose()
     {
         _taskDpmService.Dispose();
@@ -291,7 +376,7 @@ public partial class TaskWorkspaceViewModel : ObservableRecipient, IDisposable
             Text = "DeleteTip".GetLocalized(LC.General).Replace(ReplaceItem.DeleteItemPron, "DeleteFilePron".GetLocalized(LC.TaskWorkspace))
         };
 
-        // ¥¥Ω® CheckBox
+        // ÔøΩÔøΩÔøΩÔøΩ CheckBox
         var CheckToRemoveRealFile = new CheckBox
         {
             Content = "RemovePhysicalFileTip".GetLocalized(LC.TaskWorkspace),

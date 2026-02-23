@@ -11,6 +11,7 @@
     xmlns:helper="using:PhotoPasser.Helper"
     xmlns:primitive="using:PhotoPasser.Primitive"
     xmlns:tk="using:CommunityToolkit.WinUI.Controls"
+    xmlns:tkconv="using:CommunityToolkit.WinUI.Converters"
     mc:Ignorable="d">
     <Page.Resources>
         <conv:UriImageSourceConverter x:Key="UriImageSourceConverter"/>
@@ -18,6 +19,130 @@
         <conv:SortOrderToIconConverter x:Key="SortOrderToIconConverter"/>
         <conv:SortOrderToDescriptionConverter x:Key="SortOrderToDescriptionConverter"/>
         <conv:TaskSortByToDisplayConverter x:Key="TaskSortByToDisplayConverter"/>
+        <tkconv:StringVisibilityConverter x:Key="StringVisibilityConverter" />
+
+        <!-- Converter 定义 -->
+        <conv:TaskViewTypeToIndexConverter x:Key="TaskViewTypeToIndexConverter"/>
+        <conv:TaskViewItemTemplateConverter x:Key="TaskViewItemTemplateConverter">
+            <conv:TaskViewItemTemplateConverter.GridItemTemplate>
+                <DataTemplate x:DataType="models:FiltTask">
+                    <UserControl x:Name="TaskItemPresenter_Grid" PointerEntered="LibraryItem_PointerEntered" PointerExited="LibraryItem_PointerExited" IsDoubleTapEnabled="True" DoubleTapped="TaskItemPresenter_DoubleTapped">
+                        <c:ImageMaskSurface BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                            BorderThickness="1"
+                                            Background="{ThemeResource CardBackgroundFillColorDefault}"
+                                            BackgroundImage="{x:Bind PresentPhoto,Converter={StaticResource UriImageSourceConverter}}"
+                                            Height="200"
+                                            Width="300"
+                                            CornerRadius="{StaticResource OverlayCornerRadius}">
+                            <c:ImageMaskSurface.MaskStops>
+                                <c:MaskStop Offset="0.0" Alpha="0"/>
+                                <c:MaskStop Offset="0.2" Alpha="0"/>
+                                <c:MaskStop Offset="0.4" Alpha="120"/>
+                                <c:MaskStop Offset="0.576" Alpha="210"/>
+                                <c:MaskStop Offset="1.0" Alpha="255"/>
+                            </c:ImageMaskSurface.MaskStops>
+                            <Grid ColumnSpacing="16" Padding="16" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                <StackPanel Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" MaxHeight="88">
+                                    <TextBlock Grid.Row="0" Style="{ThemeResource BodyStrongTextBlockStyle}" Text="{x:Bind Name,Mode=OneWay}"/>
+                                    <TextBlock Grid.Row="1" Visibility="{x:Bind Description,Converter={StaticResource StringVisibilityConverter},Mode=OneWay}" Style="{ThemeResource CaptionTextBlockStyle}" TextWrapping="Wrap" Text="{x:Bind Description,Mode=OneWay}"/>
+                                </StackPanel>
+                                <Button Name="OptionSettingButton_Grid" Visibility="Collapsed" HorizontalAlignment="Right" Style="{StaticResource DefaultButtonStyle}" VerticalAlignment="Top">
+                                    <FontIcon Glyph="&#xE712;" />
+                                    <Button.Flyout>
+                                        <MenuFlyout>
+                                            <MenuFlyoutItem x:Uid="ms-resource:///TaskOverview/EditInformationFlyoutItem" Command="{Binding Value.ViewModel.EditTaskCommand, Source={StaticResource PageSelf}}" CommandParameter="{x:Bind}"/>
+                                            <MenuFlyoutItem x:Uid="ms-resource:///TaskOverview/DeleteFlyoutItem" Command="{Binding Value.ViewModel.DeleteTaskCommand, Source={StaticResource PageSelf}}" CommandParameter="{x:Bind}"/>
+                                        </MenuFlyout>
+                                    </Button.Flyout>
+                                </Button>
+                            </Grid>
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="OptionSettingButtonVisibility">
+                                    <VisualState x:Name="OptionSettingButtonVisible">
+                                        <VisualState.Setters>
+                                            <Setter Target="OptionSettingButton_Grid.Visibility" Value="Visible"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="OptionSettingButtonDefault">
+                                        <VisualState.Setters>
+                                            <Setter Target="OptionSettingButton_Grid.Visibility" Value="Collapsed"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                        </c:ImageMaskSurface>
+                    </UserControl>
+                </DataTemplate>
+            </conv:TaskViewItemTemplateConverter.GridItemTemplate>
+            <conv:TaskViewItemTemplateConverter.ListItemTemplate>
+                <DataTemplate x:DataType="models:FiltTask">
+                    <UserControl x:Name="TaskItemPresenter_List" PointerEntered="LibraryItem_PointerEntered" PointerExited="LibraryItem_PointerExited" IsDoubleTapEnabled="True" DoubleTapped="TaskItemPresenter_DoubleTapped">
+                        <c:ImageMaskSurface BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                            BorderThickness="1"
+                                            Background="{ThemeResource CardBackgroundFillColorDefault}"
+                                            BackgroundImage="{x:Bind PresentPhoto,Converter={StaticResource UriImageSourceConverter}}"
+                                            ImageVerticalAlignment="Center"
+                                            Height="80"
+                                            CornerRadius="{StaticResource OverlayCornerRadius}">
+                            <c:ImageMaskSurface.MaskStops>
+                                <c:MaskStop Offset="0.0" Alpha="190"/>
+                                <c:MaskStop Offset="1.0" Alpha="190"/>
+                            </c:ImageMaskSurface.MaskStops>
+                            <Grid ColumnSpacing="16" Padding="16" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <TextBlock Grid.Row="0" Style="{ThemeResource BodyStrongTextBlockStyle}" Text="{x:Bind Name,Mode=OneWay}"/>
+                                    <TextBlock Grid.Row="1" Visibility="{x:Bind Description,Converter={StaticResource StringVisibilityConverter},Mode=OneWay}" Style="{ThemeResource CaptionTextBlockStyle}" TextWrapping="Wrap" Text="{x:Bind Description,Mode=OneWay}"/>
+                                </StackPanel>
+                                <TextBlock Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind Converter={StaticResource TaskDisplayTimeConverter}}">
+                                    <TextBlock.Transitions>
+                                        <RepositionThemeTransition/>
+                                    </TextBlock.Transitions>
+                                </TextBlock>
+                                <Button Name="OptionSettingButton_List" Grid.Column="2" Visibility="Collapsed" HorizontalAlignment="Right" Style="{StaticResource DefaultButtonStyle}" VerticalAlignment="Center">
+                                    <FontIcon Glyph="&#xE712;" />
+                                    <Button.Flyout>
+                                        <MenuFlyout>
+                                            <MenuFlyoutItem x:Uid="ms-resource:///TaskOverview/EditInformationFlyoutItem" Command="{Binding Value.ViewModel.EditTaskCommand, Source={StaticResource PageSelf}}" CommandParameter="{x:Bind}"/>
+                                            <MenuFlyoutItem x:Uid="ms-resource:///TaskOverview/DeleteFlyoutItem" Command="{Binding Value.ViewModel.DeleteTaskCommand, Source={StaticResource PageSelf}}" CommandParameter="{x:Bind}"/>
+                                        </MenuFlyout>
+                                    </Button.Flyout>
+                                </Button>
+                            </Grid>
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="OptionSettingButtonVisibility">
+                                    <VisualState x:Name="OptionSettingButtonVisible">
+                                        <VisualState.Setters>
+                                            <Setter Target="OptionSettingButton_List.Visibility" Value="Visible"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="OptionSettingButtonDefault">
+                                        <VisualState.Setters>
+                                            <Setter Target="OptionSettingButton_List.Visibility" Value="Collapsed"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                        </c:ImageMaskSurface>
+                    </UserControl>
+                </DataTemplate>
+            </conv:TaskViewItemTemplateConverter.ListItemTemplate>
+        </conv:TaskViewItemTemplateConverter>
+
+        <!-- ItemsPanelTemplate 定义 -->
+        <ItemsPanelTemplate x:Key="GridItemPanelTemplate">
+            <ItemsWrapGrid Orientation="Horizontal" HorizontalAlignment="Center"/>
+        </ItemsPanelTemplate>
+        <ItemsPanelTemplate x:Key="ListItemPanelTemplate">
+            <ItemsStackPanel Orientation="Vertical" HorizontalAlignment="Center"/>
+        </ItemsPanelTemplate>
+
+        <!-- TaskDisplayTimeConverter 绑定当前排序依据 -->
+        <conv:TaskDisplayTimeConverter x:Key="TaskDisplayTimeConverter" CurrentSortBy="{x:Bind ViewModel.CurrentSortBy, Mode=OneWay}"/>
     </Page.Resources>
     <Grid RowSpacing="36" Padding="36,40">
         <Grid.RowDefinitions>
@@ -28,13 +153,13 @@
         <TextBlock Grid.Row="0" Style="{ThemeResource TitleTextBlockStyle}" x:Uid="ms-resource:///TaskOverview/HomeLabel"/>
 
         <!-- 排序控件区域 -->
-        <Grid Grid.Row="1" ColumnSpacing="12" HorizontalAlignment="Left">
+        <Grid Grid.Row="1" ColumnSpacing="12">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Orientation="Horizontal" Spacing="16">
+            <StackPanel Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Top" Orientation="Horizontal" Spacing="16">
                 <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="8">
                     <TextBlock Grid.Column="0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondary}" Style="{StaticResource CaptionTextBlockStyle}">
                         排序依据
@@ -65,77 +190,37 @@
                     </Button>
                 </Grid>
             </StackPanel>
-
+            
+            <tk:Segmented Grid.Column="1" Name="ViewTypeSelector" SelectedIndex="{x:Bind ViewModel.CurrentViewType, Mode=TwoWay, Converter={StaticResource TaskViewTypeToIndexConverter}}" HorizontalAlignment="Right">
+                <tk:SegmentedItem Tag="Grid">
+                    <tk:SegmentedItem.Icon>
+                        <FontIcon Glyph="&#xF0E2;" />
+                    </tk:SegmentedItem.Icon>
+                </tk:SegmentedItem>
+                <tk:SegmentedItem Tag="List">
+                    <tk:SegmentedItem.Icon>
+                        <FontIcon Glyph="&#xEA37;" />
+                    </tk:SegmentedItem.Icon>
+                </tk:SegmentedItem>
+            </tk:Segmented>
         </Grid>
 
-        <Grid Grid.Row="2" RowSpacing="16">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-            <GridView Name="TasksView" ItemsSource="{x:Bind ViewModel.Tasks, Mode=OneWay}" Grid.Row="0" SelectionMode="None">
-                <GridView.ItemTemplate>
-                    <DataTemplate x:DataType="models:FiltTask">
-                        <UserControl x:Name="TaskItemPresenter" PointerEntered="LibraryItem_PointerEntered" PointerExited="LibraryItem_PointerExited" IsDoubleTapEnabled="True" DoubleTapped="TaskItemPresenter_DoubleTapped">
-                            <c:ImageMaskSurface BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                                BorderThickness="1"
-                                                Background="{ThemeResource CardBackgroundFillColorDefault}"
-                                                BackgroundImage="{x:Bind PresentPhoto,Converter={StaticResource UriImageSourceConverter}}"
-                                                Height="200"
-                                                Width="300"
-                                                CornerRadius="{StaticResource OverlayCornerRadius}">
-                                <c:ImageMaskSurface.MaskStops>
-                                    <c:MaskStop Offset="0.0" Alpha="0"/>
-                                    <c:MaskStop Offset="0.2" Alpha="0"/>
-                                    <c:MaskStop Offset="0.4" Alpha="120"/>
-                                    <c:MaskStop Offset="0.576" Alpha="210"/>
-                                    <c:MaskStop Offset="1.0" Alpha="255"/>
-                                </c:ImageMaskSurface.MaskStops>
-
-                                <Grid ColumnSpacing="16" Padding="16" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-
-                                    <Grid HorizontalAlignment="Stretch" MaxHeight="88" VerticalAlignment="Bottom">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="20" />
-                                            <RowDefinition Height="*"/>
-                                            <RowDefinition Height="Auto"/>
-                                        </Grid.RowDefinitions>
-                                        <TextBlock Grid.Row="0" Style="{ThemeResource BodyStrongTextBlockStyle}" Text="{x:Bind Name}"/>
-                                        <TextBlock Grid.Row="1" Style="{ThemeResource BodyTextBlockStyle}" TextWrapping="Wrap" VerticalAlignment="Stretch" Text="{x:Bind Description}"/>
-                                    </Grid>
-                                    <Button Name="OptionSettingButton" Visibility="Collapsed" HorizontalAlignment="Right" Style="{StaticResource DefaultButtonStyle}" VerticalAlignment="Top">
-                                        <FontIcon Glyph="&#xE712;" />
-                                        <Button.Flyout>
-                                            <MenuFlyout>
-                                                <MenuFlyoutItem x:Uid="ms-resource:///TaskOverview/EditInformationFlyoutItem" Command="{Binding Value.ViewModel.EditTaskCommand, Source={StaticResource PageSelf}}" CommandParameter="{x:Bind}"/>
-                                                <MenuFlyoutItem x:Uid="ms-resource:///TaskOverview/DeleteFlyoutItem" Command="{Binding Value.ViewModel.DeleteTaskCommand, Source={StaticResource PageSelf}}" CommandParameter="{x:Bind}"/>
-                                            </MenuFlyout>
-                                        </Button.Flyout>
-                                    </Button>
-                                </Grid>
-
-                                <VisualStateManager.VisualStateGroups>
-                                    <VisualStateGroup x:Name="OptionSettingButtonVisibility">
-                                        <VisualState x:Name="OptionSettingButtonVisible">
-                                            <VisualState.Setters>
-                                                <Setter Target="OptionSettingButton.Visibility" Value="Visible"/>
-                                            </VisualState.Setters>
-                                        </VisualState>
-                                        <VisualState x:Name="OptionSettingButtonDefault">
-                                            <VisualState.Setters>
-                                                <Setter Target="OptionSettingButton.Visibility" Value="Collapsed"/>
-                                            </VisualState.Setters>
-                                        </VisualState>
-                                    </VisualStateGroup>
-                                </VisualStateManager.VisualStateGroups>
-                            </c:ImageMaskSurface>
-                        </UserControl>
-                    </DataTemplate>
-                </GridView.ItemTemplate>
+        <Grid Grid.Row="2">
+            <GridView Name="TasksView"
+                      ItemsSource="{x:Bind ViewModel.Tasks, Mode=OneWay}"
+                      ItemsPanel="{x:Bind GetPanel(ViewModel.CurrentViewType), Mode=OneWay}"
+                      ItemTemplate="{x:Bind ViewModel.CurrentViewType, Converter={StaticResource TaskViewItemTemplateConverter}, Mode=OneWay}"
+                      Padding="8,0,8,92"
+                      SelectionMode="None">
+                <GridView.ItemContainerStyle>
+                    <Style TargetType="GridViewItem" BasedOn="{StaticResource DefaultGridViewItemStyle}">
+                        <Setter Property="Margin" Value="4"/>
+                    </Style>
+                </GridView.ItemContainerStyle>
             </GridView>
-            <Grid Grid.Row="1">
+            <Grid VerticalAlignment="Bottom" Margin="24">
                 <Grid x:Name="ShadowCastGrid"/>
-                <Border x:Name="ShadowRect" HorizontalAlignment="Right" Translation="0,0,32" Loaded="ShadowRect_Loaded" Width="60" Height="60" CornerRadius="30">
+                <Border x:Name="ShadowRect" Background="{ThemeResource SolidBackgroundFillColorBase}" HorizontalAlignment="Right" Translation="0,0,32" Loaded="ShadowRect_Loaded" Width="60" Height="60" CornerRadius="30">
                     <Border.Shadow>
                         <ThemeShadow x:Name="shadow"/>
                     </Border.Shadow>

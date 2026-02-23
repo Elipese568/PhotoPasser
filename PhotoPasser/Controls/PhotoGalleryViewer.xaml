@@ -148,7 +148,7 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <Image Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" MaxHeight="16" MaxWidth="16" Source="{x:Bind Path, Converter={StaticResource FileIconConverter}}"/>
-                        <TextBlock Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" Style="{ThemeResource BodyStrongTextBlockStyle}" Text="{x:Bind UserName, Mode=OneWay}"/>
+                        <TextBlock Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" Style="{ThemeResource BodyTextBlockStyle}" Text="{x:Bind UserName, Mode=OneWay}"/>
                         <TextBlock Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind Path, Converter={StaticResource FileTypeFriendlyNameConverter}}"/>
                         <TextBlock Grid.Column="3" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind DateCreated}"/>
                         <TextBlock Grid.Column="4" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind DateModified}"/>

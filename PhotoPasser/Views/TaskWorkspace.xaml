@@ -9,6 +9,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tk="using:CommunityToolkit.WinUI.Controls"
     xmlns:conv="using:PhotoPasser.Converters"
+    xmlns:tkconv="using:CommunityToolkit.WinUI.Converters"
     xmlns:helper="using:PhotoPasser.Helper"
     xmlns:controls="using:PhotoPasser.Controls"
     xmlns:collections="using:System.Collections.Generic"
@@ -19,19 +20,25 @@
     mc:Ignorable="d">
     <Page.Resources>
         <conv:UriImageSourceConverter x:Key="UriImageSourceConverter"/>
-        <DataTemplate x:Key="ResultViewItem" x:DataType="local:FiltResult">
+        <tkconv:StringVisibilityConverter x:Key="StringVisibilityConverter"/>
+        <DataTemplate x:Key="ResultViewItem" x:DataType="viewmodels:FiltResultViewModel">
             <Grid Height="64" CornerRadius="{StaticResource OverlayCornerRadius}">
                 <Grid HorizontalAlignment="Stretch" VerticalAlignment="Center">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" Style="{ThemeResource BodyStrongTextBlockStyle}" Text="{x:Bind Name,Mode=OneWay}"/>
-                    <TextBlock Grid.Row="1" Style="{ThemeResource BodyTextBlockStyle}" TextWrapping="Wrap" VerticalAlignment="Stretch" Text="{x:Bind Description,Mode=OneWay}"/>
-                    <TextBlock Grid.Row="1" Style="{ThemeResource CaptionTextBlockStyle}" Text="{x:Bind Date}" Margin="0,2,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Right" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                    <Viewbox Grid.Row="0" Margin="2" HorizontalAlignment="Right" VerticalAlignment="Top" Height="14" Width="14">
-                        <IconSourceElement  IconSource="{x:Bind IsFavorite,Mode=OneWay,Converter={StaticResource FavoriteIconSourceConverter}}"/>
-                    </Viewbox>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="{x:Bind Name,Mode=OneWay}"/>
+                        <TextBlock Style="{ThemeResource BodyTextBlockStyle}" Visibility="{x:Bind Description,Converter={StaticResource StringVisibilityConverter},Mode=OneWay}" MaxWidth="130" HorizontalAlignment="Left" TextWrapping="NoWrap" VerticalAlignment="Stretch" Text="{x:Bind Description,Mode=OneWay}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Viewbox Margin="2" HorizontalAlignment="Right" VerticalAlignment="Top" Height="14" Width="14">
+                            <IconSourceElement  IconSource="{x:Bind IsFavorite,Mode=OneWay,Converter={StaticResource FavoriteIconSourceConverter}}"/>
+                        </Viewbox>
+                        <TextBlock Style="{ThemeResource CaptionTextBlockStyle}" Text="{x:Bind Date}" Margin="0,2,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Right" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    </StackPanel>
+                    
                 </Grid>
             </Grid>
         </DataTemplate>
@@ -171,7 +178,6 @@
                             <ListView Grid.Row="2" 
                                       x:Name="ResultViewSelector"
                                       Style="{StaticResource ResultItemsList}" 
-                                      SelectedItem="{x:Bind ViewModel.CurrentResult,Mode=TwoWay}" 
                                       SelectedIndex="{x:Bind ViewModel.DisplayedResultSelectedIndex,Mode=TwoWay}"
                                       SelectionChanged="ListView_SelectionChanged" 
                                       ItemsSource="{x:Bind ViewModel.DisplayedResults, Mode=OneWay}"/>

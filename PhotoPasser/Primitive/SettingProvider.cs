@@ -133,4 +133,14 @@ public class SettingProvider : ObservableObject
             OnPropertyChanged();
         }
     }
+
+    public TaskViewType TaskViewType
+    {
+        get => (TaskViewType)GetSetting<int>(nameof(TaskViewType), (int)TaskViewType.Grid);
+        set
+        {
+            SetSetting(nameof(TaskViewType), (int)value);
+            OnPropertyChanged();
+        }
+    }
 }

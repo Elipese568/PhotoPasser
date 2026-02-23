@@ -54,3 +54,9 @@ public enum ChangeType
     Updated,
     Deleted
 }
+
+public enum TaskViewType
+{
+    Grid = 0,
+    List = 1,
+}

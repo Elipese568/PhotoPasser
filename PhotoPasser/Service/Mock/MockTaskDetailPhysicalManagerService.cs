@@ -17,7 +17,7 @@ public class MockTaskDetailPhysicalManagerService : ITaskDetailPhysicalManagerSe
     // explicit interface implementation to satisfy interface contract
     IWorkspaceViewManager? ITaskDetailPhysicalManagerService.WorkspaceViewManager => _inMemoryManager;
 
-    private string[] _mockPicturePath = [
+    private static string[] _mockPicturePath = [
      "ms-appx:///Assets/Mock/20250407_133801.jpg",
      "ms-appx:///Assets/Mock/20250407_134009.jpg",
      "ms-appx:///Assets/Mock/20250407_134024.jpg",
@@ -60,7 +60,7 @@ public class MockTaskDetailPhysicalManagerService : ITaskDetailPhysicalManagerSe
      "ms-appx:///Assets/Mock/20250407_101157.jpg",
      "ms-appx:///Assets/Mock/20250407_101159.jpg"
     ];
-
+    public static string[] MockPicturePath => _mockPicturePath;
     public Task<Uri> CopySourceAsync(Uri source)
     {
         return Task.FromResult(source);

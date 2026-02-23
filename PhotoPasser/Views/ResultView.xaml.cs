@@ -40,7 +40,6 @@ using PhotoPasser.ViewModels;
 
 public sealed partial class ResultView : Page
 {
-    public TaskWorkspaceViewModel ParentViewModel;
     public ResultViewModel ViewModel { get; set; }
 
     public ResultView()
@@ -54,7 +53,7 @@ public sealed partial class ResultView : Page
         ViewModel = new ResultViewModel()
         {
             TaskDpmService = param.TaskDpmService,
-            CurrentResult = new PhotoPasser.ViewModels.FiltResultViewModel(param.NavigatingResult)
+            CurrentResult = param.Result  // 直接复用 TaskWorkspaceViewModel 的 ViewModel 实例
         };
 
         base.OnNavigatedTo(e);
@@ -74,12 +73,6 @@ public sealed partial class ResultView : Page
     private async void PhotoGalleryViewer_CopyAsPathResolve(Controls.PhotoGalleryViewer sender, Controls.CopyPhotoResolveEventArgs args)
     {
         await PhotoItemOperationUtils.CopyAsPath(args.CopyItems);
-    }
-    private object PhotoGalleryViewer_DeleteResolving(Controls.PhotoGalleryViewer sender, Controls.DeletePhotoResolvingEventArgs args)
-    {
-        (bool cancel, bool removePhysicalFile) = ParentViewModel.DeleteRequesting().AsAsyncOperation().Get();
-        args.Cancel = cancel;
-        return removePhysicalFile;
     }
 
     private async void PhotoGalleryViewer_RenameResolve(Controls.PhotoGalleryViewer sender, Controls.RenameResolveEventArgs args)
@@ -117,6 +110,7 @@ public sealed partial class ResultView : Page
         {
             action = "AddToFavorite";
         }
+        // 发送 FiltResultViewModel，与 TaskWorkspaceViewModel 共享同一个实例
         WeakReferenceMessenger.Default.Send(ViewModel.CurrentResult, action);
     }
 
@@ -141,6 +135,7 @@ public sealed partial class ResultView : Page
 
     private void DeleteButton_Click(object sender, RoutedEventArgs e)
     {
+        // 发送 FiltResultViewModel，与 TaskWorkspaceViewModel 共享同一个实例
         WeakReferenceMessenger.Default.Send(ViewModel.CurrentResult, "DeleteResult");
     }
 
@@ -174,8 +169,8 @@ public sealed partial class ResultView : Page
                 continue;
             }
             // add model to result's model collection and also update VM
-            ViewModel.CurrentResult.Model.PinnedPhotos.Add(item);
-            ViewModel.CurrentResult.UpdateFromModel();
+            ViewModel.CurrentResult.PinnedPhotos.Add(new(item));
+            ViewModel.CurrentResult.SyncToModel();
         }
     }
 
@@ -185,8 +180,8 @@ public sealed partial class ResultView : Page
         var model = photo?.Model;
         if (model != null)
         {
-            ViewModel.CurrentResult.Model.PinnedPhotos.Remove(model);
-            ViewModel.CurrentResult.UpdateFromModel();
+            ViewModel.CurrentResult.PinnedPhotos.Remove(photo);
+            ViewModel.CurrentResult.SyncToModel();
         }
     }
 

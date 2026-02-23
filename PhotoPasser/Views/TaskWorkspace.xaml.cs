@@ -11,7 +11,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
-using PhotoPasser; // 添加此行以引用 TextBoxDialog
+using PhotoPasser; // 锟斤拷锟接达拷锟斤拷锟斤拷锟斤拷锟斤拷 TextBoxDialog
 using PhotoPasser.Dialog;
 using PhotoPasser.Helper;
 using PhotoPasser.Primitive;
@@ -55,24 +55,28 @@ public sealed partial class TaskWorkspace : Page
             var _scopedServiceProvider = App.CreateScope().ServiceProvider;
             var _taskDpmService = _scopedServiceProvider.GetRequiredService<ITaskDetailPhysicalManagerService>();
             var detail = await _taskDpmService.InitializeAsync(task);
-            // 默认选第一个 result
             ViewModel = new TaskWorkspaceViewModel(task, _taskDpmService, detail, detail.Results?.FirstOrDefault() ?? null);
             await ViewModel.Initialize();
             this.DataContext = ViewModel;
             Bindings.Update();
             _currentVm = ViewModel;
+            ResultViewFrame.Navigate(typeof(ResultView), new ResultViewNavigationParameter()
+            {
+                TaskDpmService = ViewModel.TaskDpmService,
+                Result = ViewModel.CurrentResultViewModel
+            }, new Microsoft.UI.Xaml.Media.Animation.EntranceNavigationTransitionInfo());
             WeakReferenceMessenger.Default.Register(ViewModel, "NoResultAvaliable", (TaskWorkspaceViewModel r, string m) =>
             {
                 ResultViewFrame.Content = null;
             });
-            WeakReferenceMessenger.Default.Register(ViewModel, "NavigateToNewResult", async (TaskWorkspaceViewModel r, FiltResult m) =>
+            WeakReferenceMessenger.Default.Register(ViewModel, "NavigateToNewResult", async (TaskWorkspaceViewModel r, FiltResultViewModel m) =>
             {
                 await ResultViewFrame.DispatcherQueue.EnqueueAsync(() =>
                 {
                     ResultViewFrame.Navigate(typeof(ResultView), new ResultViewNavigationParameter()
                     {
                         TaskDpmService = ViewModel.TaskDpmService,
-                        NavigatingResult = m
+                        Result = m
                     });
                 });
             });
@@ -83,15 +87,16 @@ public sealed partial class TaskWorkspace : Page
             ViewModel = _currentVm;
             this.DataContext = ViewModel;
             Bindings.Update();
-            if(ViewModel.CurrentResult != null)
+            var selectedIndex = ViewModel.DisplayedResultSelectedIndex;
+            if (selectedIndex >= 0 && selectedIndex < ViewModel.DisplayedResults.Count)
             {
                 ResultViewFrame.Navigate(typeof(ResultView), new ResultViewNavigationParameter()
                 {
                     TaskDpmService = ViewModel.TaskDpmService,
-                    NavigatingResult = ViewModel.CurrentResult
+                    Result = ViewModel.DisplayedResults[selectedIndex]
                 }, new Microsoft.UI.Xaml.Media.Animation.EntranceNavigationTransitionInfo());
             }
-            
+
         }
 
         base.OnNavigatedTo(e);
@@ -189,17 +194,17 @@ public sealed partial class TaskWorkspace : Page
 
     private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if(e.AddedItems.Any() && ViewModel.CurrentResult != ViewModel.NavigatingResult)
+        if (e.AddedItems.Any() && !(ViewModel?.CurrentResultViewModel?.Equals(e.AddedItems[0])).GetValueOrDefault(false)) // unless .Equals, this is reference comperation
+        {
             ResultViewFrame.Navigate(typeof(ResultView), new ResultViewNavigationParameter()
             {
                 TaskDpmService = ViewModel.TaskDpmService,
-                NavigatingResult = ViewModel.CurrentResult
+                Result = e.AddedItems[0] as FiltResultViewModel
             }, new Microsoft.UI.Xaml.Media.Animation.EntranceNavigationTransitionInfo());
-
-        if(ViewModel.CurrentResult != null)
-            ViewModel.NavigatingResult = ViewModel.CurrentResult;
+            ViewModel.CurrentResultViewModel = e.AddedItems[0] as FiltResultViewModel;
+        }
     }
-    public Visibility GetEmptyTipVisibility(ObservableCollection<FiltResult> results) => results.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+    public Visibility GetEmptyTipVisibility(ObservableCollection<FiltResultViewModel> results) => results.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
     public bool Not(bool b) => !b;
     private void FilterBasedOnSelected_Invoked(Controls.PhotoGalleryViewer sender, Controls.ItemOperationInvokedEventArgs args)
     {

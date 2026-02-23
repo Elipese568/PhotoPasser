@@ -12,6 +12,7 @@ using PhotoPasser.Dialog;
 using PhotoPasser.Helper;
 using PhotoPasser.Service;
 using PhotoPasser.Strings;
+using PhotoPasser.Primitive;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -44,7 +45,11 @@ public sealed partial class TaskOverview : Page
 
         ViewModel = App.GetService<TaskOverviewViewModel>();
     }
-
+    protected override void OnNavigatedTo(NavigationEventArgs e)
+    {
+        base.OnNavigatedTo(e);
+        ViewModel.UpdateTaskList();
+    }
     private void LibraryItem_PointerEntered(object sender, PointerRoutedEventArgs e)
     {
         VisualStateManager.GoToState(sender as Control, "OptionSettingButtonVisible", true);
@@ -60,9 +65,14 @@ public sealed partial class TaskOverview : Page
         App.GetService<MainWindow>()!.Frame.Navigate(typeof(TaskWorkspace), (sender as FrameworkElement).DataContext, new Microsoft.UI.Xaml.Media.Animation.DrillInNavigationTransitionInfo());
     }
 
-    private void Border_Loaded(object sender, RoutedEventArgs e)
+    public ItemsPanelTemplate GetPanel(TaskViewType viewType)
     {
-
+        return viewType switch
+        {
+            TaskViewType.Grid => Resources["GridItemPanelTemplate"] as ItemsPanelTemplate,
+            TaskViewType.List => Resources["ListItemPanelTemplate"] as ItemsPanelTemplate,
+            _ => Resources["GridItemPanelTemplate"] as ItemsPanelTemplate
+        };
     }
 
     private void ShadowRect_Loaded(object sender, RoutedEventArgs e)

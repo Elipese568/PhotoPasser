@@ -131,6 +131,7 @@
                                                                AutoMaskColor="False"
                                                                MaskColor="{ThemeResource CardBackgroundFillColorSecondarySoild}"
                                                                ImageStretch="Uniform"
+                                                               ImageVerticalAlignment="Center"
                                                                Width="150">
                                         <controls:ImageMaskSurface.MaskStops>
                                             <controls:MaskStop Offset="0.0" Alpha="0"/>

@@ -15,5 +15,9 @@ public static class ObjectExtensions
             action(obj);
             return obj;
         }
+        public T Let(Func<T, T> action)
+        {
+            return action(obj);
+        }
     }
 }

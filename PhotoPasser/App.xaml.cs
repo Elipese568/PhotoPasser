@@ -1,4 +1,4 @@
-﻿//#define MOCKING
+﻿#define MOCKING
 using System;
 using System.Collections.Generic;
 using System.IO;
